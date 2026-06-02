@@ -1,0 +1,11 @@
+---
+title: "MB5370_Module02"
+author: "Katie Dyck"
+output: html_document
+date: "2026-06-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
