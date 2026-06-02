@@ -1,5 +1,5 @@
 ---
-title: "MB5370_Module02"
+title: "MB5370_Module02_Workshop1"
 author: "Katie Dyck"
 output: html_document
 date: "2026-06-02"
@@ -9,7 +9,7 @@ date: "2026-06-02"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Create a new GitHub repository for this module & connect to RStudio:
+I created a new GitHub repository for this module & connected it to RStudio:
 
 ```{r Connect to GitHub}
 # in the console:
@@ -29,6 +29,5 @@ Create a new GitHub repository for this module & connect to RStudio:
   # git push
 ```
 
-
-## WORKSHOP 1: FOUNDATIONS OF DATA SCIENCE - WRANGLING & PLOTTING
+Data files (.csv, .txt, .xlsx) were copied from class repository "R4MarineScience" and added to the data folder in my repository for Module 2.
 
