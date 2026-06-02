@@ -9,3 +9,15 @@ date: "2026-06-02"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Create a new GitHub repository for this module & connect to RStudio
+
+```{r Connect to GitHub}
+# in the console:
+#   credentials::git_credential_ask()
+#   usethis::git_sitrep()
+#   usethis::use_git()
+
+# after staging and committing files from the Git pane, in the console:
+  # usethis::use_github()
+```
+
