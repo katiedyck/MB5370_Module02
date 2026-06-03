@@ -2226,6 +2226,7 @@ vertical-align: -.125em;
   <li><a href="#visualizing-the-penguins-data" id="toc-visualizing-the-penguins-data" class="nav-link" data-scroll-target="#visualizing-the-penguins-data"><span class="header-section-number">5</span> Visualizing the <code>penguins</code> data</a>
   <ul class="collapse">
   <li><a href="#visualizing-body-size-and-shape" id="toc-visualizing-body-size-and-shape" class="nav-link" data-scroll-target="#visualizing-body-size-and-shape"><span class="header-section-number">5.1</span> Visualizing body size and shape</a></li>
+  <li><a href="#completed-morphological-plot-and-summary-table" id="toc-completed-morphological-plot-and-summary-table" class="nav-link" data-scroll-target="#completed-morphological-plot-and-summary-table"><span class="header-section-number">5.2</span> <strong>Completed morphological plot and summary table</strong></a></li>
   </ul></li>
   <li><a href="#saving-exporting-and-version-milestones" id="toc-saving-exporting-and-version-milestones" class="nav-link" data-scroll-target="#saving-exporting-and-version-milestones"><span class="header-section-number">6</span> Saving, exporting, and version milestones</a></li>
   </ul>
@@ -2889,6 +2890,9 @@ $ bill_ratio        &lt;dbl&gt; 2.090909, 2.270115, 2.238889, NA, 1.901554, 1.90
 </div>
 </div>
 </div>
+</section>
+<section id="completed-morphological-plot-and-summary-table" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="completed-morphological-plot-and-summary-table"><span class="header-section-number">5.2</span> <strong>Completed morphological plot and summary table</strong></h2>
 <div class="cell">
 <details open class="code-fold">
 <summary>Show code</summary>
@@ -3761,89 +3765,91 @@ $ bill_ratio        &lt;dbl&gt; 2.090909, 2.270115, 2.238889, NA, 1.901554, 1.90
 <span id="cb72-292"><a href="#cb72-292" aria-hidden="true" tabindex="-1"></a>mass_compare_plot</span>
 <span id="cb72-293"><a href="#cb72-293" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb72-294"><a href="#cb72-294" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-297"><a href="#cb72-297" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb72-298"><a href="#cb72-298" aria-hidden="true" tabindex="-1"></a>mass_compare_plot2 <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
-<span id="cb72-299"><a href="#cb72-299" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(body_mass_g)) <span class="sc">|&gt;</span>    <span class="co"># remove any NA values from body_mass_g</span></span>
-<span id="cb72-300"><a href="#cb72-300" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(species, island) <span class="sc">|&gt;</span> </span>
-<span id="cb72-301"><a href="#cb72-301" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
-<span id="cb72-302"><a href="#cb72-302" aria-hidden="true" tabindex="-1"></a>        <span class="at">mean_mass =</span> <span class="fu">mean</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb72-303"><a href="#cb72-303" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="fu">n</span>(),</span>
-<span id="cb72-304"><a href="#cb72-304" aria-hidden="true" tabindex="-1"></a>        <span class="at">sd_mass =</span> <span class="fu">sd</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb72-305"><a href="#cb72-305" aria-hidden="true" tabindex="-1"></a>        <span class="at">se_mass =</span> sd_mass <span class="sc">/</span> <span class="fu">sqrt</span>(n),</span>
-<span id="cb72-306"><a href="#cb72-306" aria-hidden="true" tabindex="-1"></a>        <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb72-307"><a href="#cb72-307" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
-<span id="cb72-308"><a href="#cb72-308" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species, <span class="at">y =</span> mean_mass, <span class="at">colour =</span> island)) <span class="sc">+</span></span>
-<span id="cb72-309"><a href="#cb72-309" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>, <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
-<span id="cb72-310"><a href="#cb72-310" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> mean_mass <span class="sc">-</span> se_mass,</span>
-<span id="cb72-311"><a href="#cb72-311" aria-hidden="true" tabindex="-1"></a>                      <span class="at">ymax =</span> mean_mass <span class="sc">+</span> se_mass),</span>
-<span id="cb72-312"><a href="#cb72-312" aria-hidden="true" tabindex="-1"></a>                  <span class="at">width =</span> <span class="fl">0.2</span>,</span>
-<span id="cb72-313"><a href="#cb72-313" aria-hidden="true" tabindex="-1"></a>                  <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
-<span id="cb72-314"><a href="#cb72-314" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Mean Body Mass by Species and Island&quot;</span>,</span>
-<span id="cb72-315"><a href="#cb72-315" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> <span class="st">&quot;Species&quot;</span>,</span>
-<span id="cb72-316"><a href="#cb72-316" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> <span class="st">&quot;Mean Body Mass (g) ± SE &quot;</span>) <span class="sc">+</span></span>
-<span id="cb72-317"><a href="#cb72-317" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb72-318"><a href="#cb72-318" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
-<span id="cb72-319"><a href="#cb72-319" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-320"><a href="#cb72-320" aria-hidden="true" tabindex="-1"></a>mass_compare_plot2</span>
-<span id="cb72-321"><a href="#cb72-321" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb72-322"><a href="#cb72-322" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-323"><a href="#cb72-323" aria-hidden="true" tabindex="-1"></a>When we compare these two graphs side by side, we see that the standard *error* bars are much smaller than the standard *deviation* bars, which makes sense because the standard error is a measure of how precisely we have estimated the mean, while the standard deviation is a measure of how much variability there is in the data. The standard error will always be smaller than the standard deviation, especially as sample size increases.</span>
+<span id="cb72-295"><a href="#cb72-295" aria-hidden="true" tabindex="-1"></a><span class="fu">## **Completed morphological plot and summary table**</span></span>
+<span id="cb72-296"><a href="#cb72-296" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-299"><a href="#cb72-299" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb72-300"><a href="#cb72-300" aria-hidden="true" tabindex="-1"></a>mass_compare_plot2 <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
+<span id="cb72-301"><a href="#cb72-301" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(body_mass_g)) <span class="sc">|&gt;</span>    <span class="co"># remove any NA values from body_mass_g</span></span>
+<span id="cb72-302"><a href="#cb72-302" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(species, island) <span class="sc">|&gt;</span> </span>
+<span id="cb72-303"><a href="#cb72-303" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
+<span id="cb72-304"><a href="#cb72-304" aria-hidden="true" tabindex="-1"></a>        <span class="at">mean_mass =</span> <span class="fu">mean</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb72-305"><a href="#cb72-305" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb72-306"><a href="#cb72-306" aria-hidden="true" tabindex="-1"></a>        <span class="at">sd_mass =</span> <span class="fu">sd</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb72-307"><a href="#cb72-307" aria-hidden="true" tabindex="-1"></a>        <span class="at">se_mass =</span> sd_mass <span class="sc">/</span> <span class="fu">sqrt</span>(n),</span>
+<span id="cb72-308"><a href="#cb72-308" aria-hidden="true" tabindex="-1"></a>        <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb72-309"><a href="#cb72-309" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb72-310"><a href="#cb72-310" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species, <span class="at">y =</span> mean_mass, <span class="at">colour =</span> island)) <span class="sc">+</span></span>
+<span id="cb72-311"><a href="#cb72-311" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>, <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb72-312"><a href="#cb72-312" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> mean_mass <span class="sc">-</span> se_mass,</span>
+<span id="cb72-313"><a href="#cb72-313" aria-hidden="true" tabindex="-1"></a>                      <span class="at">ymax =</span> mean_mass <span class="sc">+</span> se_mass),</span>
+<span id="cb72-314"><a href="#cb72-314" aria-hidden="true" tabindex="-1"></a>                  <span class="at">width =</span> <span class="fl">0.2</span>,</span>
+<span id="cb72-315"><a href="#cb72-315" aria-hidden="true" tabindex="-1"></a>                  <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb72-316"><a href="#cb72-316" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Mean Body Mass by Species and Island&quot;</span>,</span>
+<span id="cb72-317"><a href="#cb72-317" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> <span class="st">&quot;Species&quot;</span>,</span>
+<span id="cb72-318"><a href="#cb72-318" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> <span class="st">&quot;Mean Body Mass (g) ± SE &quot;</span>) <span class="sc">+</span></span>
+<span id="cb72-319"><a href="#cb72-319" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb72-320"><a href="#cb72-320" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
+<span id="cb72-321"><a href="#cb72-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-322"><a href="#cb72-322" aria-hidden="true" tabindex="-1"></a>mass_compare_plot2</span>
+<span id="cb72-323"><a href="#cb72-323" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb72-324"><a href="#cb72-324" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-327"><a href="#cb72-327" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb72-328"><a href="#cb72-328" aria-hidden="true" tabindex="-1"></a>summary_SD <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
-<span id="cb72-329"><a href="#cb72-329" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(body_mass_g)) <span class="sc">|&gt;</span>    <span class="co"># remove any NA values from body_mass_g</span></span>
-<span id="cb72-330"><a href="#cb72-330" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(species, island) <span class="sc">|&gt;</span> </span>
-<span id="cb72-331"><a href="#cb72-331" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
-<span id="cb72-332"><a href="#cb72-332" aria-hidden="true" tabindex="-1"></a>        <span class="at">mean_mass =</span> <span class="fu">mean</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb72-333"><a href="#cb72-333" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="fu">n</span>(),</span>
-<span id="cb72-334"><a href="#cb72-334" aria-hidden="true" tabindex="-1"></a>        <span class="at">sd_mass =</span> <span class="fu">sd</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb72-335"><a href="#cb72-335" aria-hidden="true" tabindex="-1"></a>        <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb72-336"><a href="#cb72-336" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb72-337"><a href="#cb72-337" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-338"><a href="#cb72-338" aria-hidden="true" tabindex="-1"></a>summary_SE <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
-<span id="cb72-339"><a href="#cb72-339" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(body_mass_g)) <span class="sc">|&gt;</span>    <span class="co"># remove any NA values from body_mass_g</span></span>
-<span id="cb72-340"><a href="#cb72-340" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(species, island) <span class="sc">|&gt;</span> </span>
-<span id="cb72-341"><a href="#cb72-341" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
-<span id="cb72-342"><a href="#cb72-342" aria-hidden="true" tabindex="-1"></a>        <span class="at">mean_mass =</span> <span class="fu">mean</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb72-343"><a href="#cb72-343" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="fu">n</span>(),</span>
-<span id="cb72-344"><a href="#cb72-344" aria-hidden="true" tabindex="-1"></a>        <span class="at">sd_mass =</span> <span class="fu">sd</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb72-345"><a href="#cb72-345" aria-hidden="true" tabindex="-1"></a>        <span class="at">se_mass =</span> sd_mass <span class="sc">/</span> <span class="fu">sqrt</span>(n),</span>
-<span id="cb72-346"><a href="#cb72-346" aria-hidden="true" tabindex="-1"></a>        <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb72-347"><a href="#cb72-347" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb72-348"><a href="#cb72-348" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-349"><a href="#cb72-349" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(summary_SD)</span>
-<span id="cb72-350"><a href="#cb72-350" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(summary_SE)</span>
-<span id="cb72-351"><a href="#cb72-351" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb72-352"><a href="#cb72-352" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-353"><a href="#cb72-353" aria-hidden="true" tabindex="-1"></a>Looking at the summary tables, we can see that the standard error decreases as sample size increases (e.g. SE 73.5 for Adelie penguins on Biscoe island (n = 44) vs. SE 45.5 for Gentoo penguins on Biscoe island (n = 68)). These tables also tell us that as sample size (n) increases, so does the mean mass for each species on each island, which makes sense.</span>
+<span id="cb72-325"><a href="#cb72-325" aria-hidden="true" tabindex="-1"></a>When we compare these two graphs side by side, we see that the standard *error* bars are much smaller than the standard *deviation* bars, which makes sense because the standard error is a measure of how precisely we have estimated the mean, while the standard deviation is a measure of how much variability there is in the data. The standard error will always be smaller than the standard deviation, especially as sample size increases.</span>
+<span id="cb72-326"><a href="#cb72-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-329"><a href="#cb72-329" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb72-330"><a href="#cb72-330" aria-hidden="true" tabindex="-1"></a>summary_SD <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
+<span id="cb72-331"><a href="#cb72-331" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(body_mass_g)) <span class="sc">|&gt;</span>    <span class="co"># remove any NA values from body_mass_g</span></span>
+<span id="cb72-332"><a href="#cb72-332" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(species, island) <span class="sc">|&gt;</span> </span>
+<span id="cb72-333"><a href="#cb72-333" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
+<span id="cb72-334"><a href="#cb72-334" aria-hidden="true" tabindex="-1"></a>        <span class="at">mean_mass =</span> <span class="fu">mean</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb72-335"><a href="#cb72-335" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb72-336"><a href="#cb72-336" aria-hidden="true" tabindex="-1"></a>        <span class="at">sd_mass =</span> <span class="fu">sd</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb72-337"><a href="#cb72-337" aria-hidden="true" tabindex="-1"></a>        <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb72-338"><a href="#cb72-338" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb72-339"><a href="#cb72-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-340"><a href="#cb72-340" aria-hidden="true" tabindex="-1"></a>summary_SE <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
+<span id="cb72-341"><a href="#cb72-341" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(body_mass_g)) <span class="sc">|&gt;</span>    <span class="co"># remove any NA values from body_mass_g</span></span>
+<span id="cb72-342"><a href="#cb72-342" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(species, island) <span class="sc">|&gt;</span> </span>
+<span id="cb72-343"><a href="#cb72-343" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
+<span id="cb72-344"><a href="#cb72-344" aria-hidden="true" tabindex="-1"></a>        <span class="at">mean_mass =</span> <span class="fu">mean</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb72-345"><a href="#cb72-345" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb72-346"><a href="#cb72-346" aria-hidden="true" tabindex="-1"></a>        <span class="at">sd_mass =</span> <span class="fu">sd</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb72-347"><a href="#cb72-347" aria-hidden="true" tabindex="-1"></a>        <span class="at">se_mass =</span> sd_mass <span class="sc">/</span> <span class="fu">sqrt</span>(n),</span>
+<span id="cb72-348"><a href="#cb72-348" aria-hidden="true" tabindex="-1"></a>        <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb72-349"><a href="#cb72-349" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb72-350"><a href="#cb72-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-351"><a href="#cb72-351" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(summary_SD)</span>
+<span id="cb72-352"><a href="#cb72-352" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(summary_SE)</span>
+<span id="cb72-353"><a href="#cb72-353" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb72-354"><a href="#cb72-354" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-355"><a href="#cb72-355" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-356"><a href="#cb72-356" aria-hidden="true" tabindex="-1"></a><span class="fu"># Saving, exporting, and version milestones</span></span>
+<span id="cb72-355"><a href="#cb72-355" aria-hidden="true" tabindex="-1"></a>Looking at the summary tables, we can see that the standard error decreases as sample size increases (e.g. SE 73.5 for Adelie penguins on Biscoe island (n = 44) vs. SE 45.5 for Gentoo penguins on Biscoe island (n = 68)). These tables also tell us that as sample size (n) increases, so does the mean mass for each species on each island, which makes sense.</span>
+<span id="cb72-356"><a href="#cb72-356" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb72-357"><a href="#cb72-357" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-358"><a href="#cb72-358" aria-hidden="true" tabindex="-1"></a><span class="in">```{r Saving tables}</span></span>
-<span id="cb72-359"><a href="#cb72-359" aria-hidden="true" tabindex="-1"></a><span class="co"># Create output directories if they do not exist:</span></span>
-<span id="cb72-360"><a href="#cb72-360" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">&quot;outputs/figures&quot;</span>)) <span class="fu">dir.create</span>(<span class="st">&quot;outputs/figures&quot;</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>) <span class="co"># folder for figs</span></span>
-<span id="cb72-361"><a href="#cb72-361" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">&quot;outputs/tables&quot;</span>)) <span class="fu">dir.create</span>(<span class="st">&quot;outputs/tables&quot;</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>) <span class="co"># folder for tables</span></span>
-<span id="cb72-362"><a href="#cb72-362" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">&quot;Rdata&quot;</span>)) <span class="fu">dir.create</span>(<span class="st">&quot;Rdata&quot;</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>) <span class="co"># folder for Rdata objects</span></span>
-<span id="cb72-363"><a href="#cb72-363" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-364"><a href="#cb72-364" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Exporting our collapsed summary table as a universal flat text file</span></span>
-<span id="cb72-365"><a href="#cb72-365" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(biological_signal, <span class="st">&quot;outputs/penguin_species_mass_summary.csv&quot;</span>)</span>
-<span id="cb72-366"><a href="#cb72-366" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-367"><a href="#cb72-367" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Saving our cleaned morphological cohort table as a native R binary file</span></span>
-<span id="cb72-368"><a href="#cb72-368" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(clean_scientific_fields, <span class="st">&quot;outputs/clean_penguin_morphology_cohort.rds&quot;</span>)</span>
-<span id="cb72-369"><a href="#cb72-369" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb72-370"><a href="#cb72-370" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-371"><a href="#cb72-371" aria-hidden="true" tabindex="-1"></a><span class="in">```{r Saving figures}</span></span>
-<span id="cb72-372"><a href="#cb72-372" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;outputs/mass_compare_plot.png&quot;</span>, </span>
-<span id="cb72-373"><a href="#cb72-373" aria-hidden="true" tabindex="-1"></a>       <span class="at">plot =</span> mass_compare_plot, </span>
-<span id="cb72-374"><a href="#cb72-374" aria-hidden="true" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">120</span>, <span class="at">height =</span> <span class="dv">120</span>, </span>
-<span id="cb72-375"><a href="#cb72-375" aria-hidden="true" tabindex="-1"></a>       <span class="at">units =</span> <span class="st">&quot;mm&quot;</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
-<span id="cb72-376"><a href="#cb72-376" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-377"><a href="#cb72-377" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;outputs/mass_compare_plot2.png&quot;</span>, </span>
-<span id="cb72-378"><a href="#cb72-378" aria-hidden="true" tabindex="-1"></a>       <span class="at">plot =</span> mass_compare_plot, </span>
-<span id="cb72-379"><a href="#cb72-379" aria-hidden="true" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">120</span>, <span class="at">height =</span> <span class="dv">120</span>, </span>
-<span id="cb72-380"><a href="#cb72-380" aria-hidden="true" tabindex="-1"></a>       <span class="at">units =</span> <span class="st">&quot;mm&quot;</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
-<span id="cb72-381"><a href="#cb72-381" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb72-358"><a href="#cb72-358" aria-hidden="true" tabindex="-1"></a><span class="fu"># Saving, exporting, and version milestones</span></span>
+<span id="cb72-359"><a href="#cb72-359" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-360"><a href="#cb72-360" aria-hidden="true" tabindex="-1"></a><span class="in">```{r Saving tables}</span></span>
+<span id="cb72-361"><a href="#cb72-361" aria-hidden="true" tabindex="-1"></a><span class="co"># Create output directories if they do not exist:</span></span>
+<span id="cb72-362"><a href="#cb72-362" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">&quot;outputs/figures&quot;</span>)) <span class="fu">dir.create</span>(<span class="st">&quot;outputs/figures&quot;</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>) <span class="co"># folder for figs</span></span>
+<span id="cb72-363"><a href="#cb72-363" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">&quot;outputs/tables&quot;</span>)) <span class="fu">dir.create</span>(<span class="st">&quot;outputs/tables&quot;</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>) <span class="co"># folder for tables</span></span>
+<span id="cb72-364"><a href="#cb72-364" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">&quot;Rdata&quot;</span>)) <span class="fu">dir.create</span>(<span class="st">&quot;Rdata&quot;</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>) <span class="co"># folder for Rdata objects</span></span>
+<span id="cb72-365"><a href="#cb72-365" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-366"><a href="#cb72-366" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Exporting our collapsed summary table as a universal flat text file</span></span>
+<span id="cb72-367"><a href="#cb72-367" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(biological_signal, <span class="st">&quot;outputs/penguin_species_mass_summary.csv&quot;</span>)</span>
+<span id="cb72-368"><a href="#cb72-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-369"><a href="#cb72-369" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Saving our cleaned morphological cohort table as a native R binary file</span></span>
+<span id="cb72-370"><a href="#cb72-370" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(clean_scientific_fields, <span class="st">&quot;outputs/clean_penguin_morphology_cohort.rds&quot;</span>)</span>
+<span id="cb72-371"><a href="#cb72-371" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb72-372"><a href="#cb72-372" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-373"><a href="#cb72-373" aria-hidden="true" tabindex="-1"></a><span class="in">```{r Saving figures}</span></span>
+<span id="cb72-374"><a href="#cb72-374" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;outputs/mass_compare_plot.png&quot;</span>, </span>
+<span id="cb72-375"><a href="#cb72-375" aria-hidden="true" tabindex="-1"></a>       <span class="at">plot =</span> mass_compare_plot, </span>
+<span id="cb72-376"><a href="#cb72-376" aria-hidden="true" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">120</span>, <span class="at">height =</span> <span class="dv">120</span>, </span>
+<span id="cb72-377"><a href="#cb72-377" aria-hidden="true" tabindex="-1"></a>       <span class="at">units =</span> <span class="st">&quot;mm&quot;</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb72-378"><a href="#cb72-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-379"><a href="#cb72-379" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;outputs/mass_compare_plot2.png&quot;</span>, </span>
+<span id="cb72-380"><a href="#cb72-380" aria-hidden="true" tabindex="-1"></a>       <span class="at">plot =</span> mass_compare_plot, </span>
+<span id="cb72-381"><a href="#cb72-381" aria-hidden="true" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">120</span>, <span class="at">height =</span> <span class="dv">120</span>, </span>
+<span id="cb72-382"><a href="#cb72-382" aria-hidden="true" tabindex="-1"></a>       <span class="at">units =</span> <span class="st">&quot;mm&quot;</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb72-383"><a href="#cb72-383" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

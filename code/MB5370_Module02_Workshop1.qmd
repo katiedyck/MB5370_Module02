@@ -292,6 +292,8 @@ mass_compare_plot <- penguins |>
 mass_compare_plot
 ```
 
+## **Completed morphological plot and summary table**
+
 ```{r}
 mass_compare_plot2 <- penguins |> 
     filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
