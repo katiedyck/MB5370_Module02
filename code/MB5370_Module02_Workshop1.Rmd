@@ -1,8 +1,21 @@
 ---
 title: "MB5370_Module02_Workshop1"
 author: "Katie Dyck"
-output: html_document
 date: "2026-06-02"
+output:
+    html_document:
+        code_folding: show
+        collapse: no
+        df_print: paged
+        fig_caption: yes
+        fig_height: 6
+        fig_width: 10
+        highlight: textmate
+        theme: spacelab
+        toc: yes
+        toc_float: yes
+    editor_options:
+        chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -30,4 +43,135 @@ I created a new GitHub repository for this module & connected it to RStudio:
 ```
 
 Data files (.csv, .txt, .xlsx) were copied from class repository "R4MarineScience" and added to the data folder in my repository for Module 2.
+
+```{r Clear session environment}
+# Housekeeping
+
+## Inventory every active object currently residing in session RAM
+objects()
+
+## Purge global environment
+rm(list = ls())
+
+# Confirm that global session memory is now vacant
+objects()
+```
+### Load necessary packages
+
+```{r Load packages}
+library(tidyverse)
+library(readxl)
+```
+
+### Importing different file types
+
+```{r Import data}
+# Practice import A
+benthic_cover <- read_csv("../data/reef_cover_log.csv")
+
+# Practice import B
+acoustic_stream <- read_tsv(here::here("data/acoustic_telemetry_stream.txt"))
+
+# Practice import C
+fisheries_annual <- read_excel(here::here("data/fish_catch_data.xlsx"), sheet = "Commercial_2026")
+
+# Read in mangrove data
+mangrove_data <- read_csv(here::here("data/mangrove_survey_raw.csv"))
+mangrove_data
+
+# Use args in read_csv() to read mangrove_data properly
+mangrove_data <- read_csv(here::here("data/mangrove_survey_raw.csv"),
+                          skip = 5,       # skip the first 5 lines of field notes
+                          na = c(".", "NA", "9999", "ND", "blank"))      # convert known text alternatives to true NA
+mangrove_data
+```
+
+All 4 data sets are tibbles.
+You can turn tibbles, which are `tidyverse` data objects, into a data frame:
+
+```{r Covert tibble to data frame}
+benthic_cover_df <- as.data.frame(benthic_cover)
+
+print(benthic_cover)
+print(benthic_cover_df)
+```
+
+Notice the difference between these two data sets. `benthic_cover` tells you its dimensions and variable types (character, double, etc.) below the column headers. 
+
+
+### Palmer Penguins data set
+
+```{r Load penguin data}
+library(palmerpenguins)
+
+# Load package data into active memory
+data("penguins")
+
+# Examine dataset structure
+glimpse(penguins)       # tidyverse version
+str(penguins)           # base R version
+
+# Generate an exploratory summary matrix
+summary(penguins)
+```
+
+Note that the `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `body_mass_g`, and `sex` variables have some NA values.
+
+## Foundational grammar: Slicing, filtering, sorting, and transforming
+
+### `select()` - isolating attributes
+
+Targets variables vertically:
+
+```{r select()}
+# Vertically slice specific variables by name
+morphology_metrics <- select(penguins, species, bill_length_mm, bill_depth_mm, body_mass_g)
+glimpse(morphology_metrics)
+
+# Retain a continuous block of attributes using colon operator
+spatial_block <- select(penguins, species:island)
+glimpse(spatial_block)
+
+# Discard logistics tracking attributes while keeping everything else using minus sign
+clean_scientific_fields <- select(penguins, -year)
+glimpse(clean_scientific_fields)
+```
+
+### `filter()`
+
+Isolates records (i.e. rows) horizontally based on targeted conditional parameters. R evaluates each row against a logical expression, keeping entries that are `TRUE` and dropping those that are `FALSE` or `NA` (i.e. those that do not meet the expression).
+
+```{r filter()}
+# Isolate observations belonging to a single categorical target group
+adelie_cohort <- filter(penguins, species == "Adelie")
+
+# Filter out individuals using continuous numerical boundary thresholds
+# Keeps only large penguins whose mass exceeds 4500 g
+heavy_penguins <- filter(penguins, body_mass_g > 4500)
+
+# Combine multiple conditional parameters across separate attributes
+# Keep records that match Gentoo penguins sampled explicitly on Biscoe Island
+biscoe_gentoo <- filter(penguins, species == "Gentoo" & island == "Biscoe")
+
+# Search for rows matching multiple targeting flags within an explicit set
+sub_islands <- filter(penguins, island %in% c("Dream", "Torgersen"))
+```
+
+
+### `arrange()`
+
+Alters how the rows of data are sorted within your data frame, without changing individual cell values
+
+```{r arrange()}
+# Sort penguins by ascending body mass (Default setting: smallest mass first)
+lightest_first <- arrange(penguins, body_mass_g)
+
+# Sort penguins in descending sequence using the desc() layout wrapper
+heaviest_first <- arrange(penguins, desc(body_mass_g))
+
+# Execute nested sorting criteria: group by species, then sort by descending bill length
+stratified_morphology <- arrange(penguins, species, desc(bill_length_mm))
+```
+
+### Pipe operator (`|>`)
 
