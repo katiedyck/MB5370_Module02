@@ -27,7 +27,11 @@ format:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = FALSE,
+  include = TRUE,
+  message = FALSE,
+  warning = FALSE)
 ```
 
 I created a new GitHub repository for this module & connected it to RStudio:
