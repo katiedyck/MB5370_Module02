@@ -236,5 +236,46 @@ print(biological_signal)
 ```
 
 
-# Integrating data grammar with visual diagnostics
+# Visualizing the `penguins` data
+
+## Visualizing body size and shape:
+
+```{r visualizing body size & shape}
+penguin_mass_by_island <- penguins |> 
+    group_by(species, island) |> 
+    summarise(mean_mass_g = mean(body_mass_g, na.rm = TRUE))
+
+print(penguin_mass_by_island)
+
+# Visualize the data
+ggplot(penguin_mass_by_island, aes(x = species, y = mean_mass_g)) +
+    geom_boxplot() +
+    facet_wrap(~ island) +
+    labs(x = "Species", y = "Mean Body Mass (g)", title = "Mean Body Mass (g) of Penguin Species found at Palmer Research \nStation, Antarctica") +
+    theme(plot.title = element_text(face = "bold"))
+```
+
+You can also pipe directly to visualization without creating an intermediate summary table:
+
+```{r piping directly to visualization}
+mass_compare_plot <- penguins |> 
+    group_by(species, island) |> 
+    summarize(
+        mean_mass = mean(body_mass_g, na.rm = TRUE),
+        sd_mass = sd(body_mass_g, na.rm = TRUE),
+        n = n(),
+        .groups = "drop"
+    ) |> 
+    ggplot(aes(x = species, y = mean_mass, colour = island)) +
+    geom_point(size = 3) +
+    geom_errorbar(aes(ymin = mean_mass - sd_mass,
+                      ymax = mean_mass + sd_mass),
+                  width = 0.2) +
+    labs(title = "Mean Body Mass by Species and Island",
+         x = "Species",
+         y = "Mean Body Mass (g)") +
+    theme_minimal()
+
+mass_compare_plot
+```
 
