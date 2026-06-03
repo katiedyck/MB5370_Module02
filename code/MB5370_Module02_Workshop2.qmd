@@ -1,0 +1,98 @@
+---
+title: "R for Marine Science - Workshop 2"
+author: "Katie Dyck"
+date: "2026-06-04"
+execute:
+  echo: false
+format:
+    html:
+        embed-resources: true
+        code-fold: show
+        code-tools: true
+        code-block-bg: true
+        code-block-border-left: "darkgrey"
+        code-overflow: wrap
+        toc: true
+        number-sections: true
+        number-depth: 4
+        toc-location: left
+        toc-expand: 2
+        toc-title: Contents
+        syntax-highlighting: github
+        theme: cosmo
+        fig-height: 6
+        fig-width: 10
+        fig-cap-location: bottom
+---
+
+## Introduction
+
+This qmd file includes all material covered from the second "R for Marine Science" workshop. The material covered includes:
+
+- Tidying data
+- Pivoting wider and longer
+- Separating and uniting variables
+- Dealing with strings and dates
+- Joining and separating data frames/tibbles
+- Handling missing values
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  include = TRUE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+```{r load packages}
+# Load required packages
+library(tidyverse)  # includes `stringr` and `lubridate` packages
+```
+
+# Tidying data
+
+This is what a tidy data table looks like:
+
+```{r tidy table example}
+table1 <- table1
+print(table1)
+```
+
+This is what an *untidy* data table looks like:
+
+```{r untidy table examples}
+table2 <- table2
+print(table2)
+
+table3 <- table3
+print(table3)
+```
+
+A tidy dataset follows these 3 interrelated rules:
+
+- Each variable has its own column
+- Each observation has its own row
+- Each value has its own cell
+
+The rules are interrelated because only 2 of the 3 rules can be followed at any time.
+
+*All `tidyverse` packages have been designed to work with tidy data.*
+
+# Pivoting data
+
+`pivot_longer()` and `pivot_wider()` are used to reshape data tables. `pivot_longer()` is used to make a wide table longer, while `pivot_wider()` is used to make a long table wider.
+
+```{r pivot_longer()}
+table1 |> 
+  pivot_longer(cols = c("cases", "population"),
+               names_to = "case_type",
+               values_to = "case_count")
+```
+```{r pivot_wider}
+table2 |> 
+  pivot_wider(names_from = "type", values_from = "count")
+```
+
+
+# Lengthening datasets
+
