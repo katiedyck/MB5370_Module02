@@ -1,21 +1,31 @@
 ---
 title: "R for Marine Science - Workshop 1"
 author: "Katie Dyck"
-date: "2026-06-02"
-output:
-    html_document:
-        code_folding: show
-        collapse: no
-        df_print: paged
-        fig_caption: yes
-        fig_height: 6
-        fig_width: 10
-        highlight: textmate
+date: "2026-06-03"
+execute:
+  echo: false
+format:
+    html:
+        code-fold: show
+        code-summary: "Show code"
+        code-tools: true
+        code-block-bg: true
+        code-block-border-left: "darkgrey"
+        code-overflow: wrap
+        toc: true
+        number-sections: true
+        number-depth: 4
+        toc-location: left
+        toc-expand: 2
+        toc-title: Contents
+        syntax-highlighting: github
         theme: cosmo
-        toc: yes
-        toc_float: yes
-    editor_options:
-        chunk_output_type: inline
+        fig-height: 6
+        fig-width: 10
+        fig-cap-location: bottom
+        
+        df_print: paged
+
 ---
 
 ```{r setup, include=FALSE}
@@ -45,12 +55,12 @@ I created a new GitHub repository for this module & connected it to RStudio:
 Data files (.csv, .txt, .xlsx) were copied from class repository "R4MarineScience" and added to the data folder in my repository for Module 2.
 
 ```{r Clear session environment}
-# Housekeeping
+## Housekeeping
 
-## Inventory every active object currently residing in session RAM
+# Inventory every active object currently residing in session RAM
 objects()
 
-## Purge global environment
+# Purge global environment
 rm(list = ls())
 
 # Confirm that global session memory is now vacant
