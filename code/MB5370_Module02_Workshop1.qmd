@@ -1,5 +1,5 @@
 ---
-title: "MB5370_Module02_Workshop1"
+title: "R for Marine Science - Workshop 1"
 author: "Katie Dyck"
 date: "2026-06-02"
 output:
@@ -11,7 +11,7 @@ output:
         fig_height: 6
         fig_width: 10
         highlight: textmate
-        theme: spacelab
+        theme: cosmo
         toc: yes
         toc_float: yes
     editor_options:
@@ -56,14 +56,14 @@ rm(list = ls())
 # Confirm that global session memory is now vacant
 objects()
 ```
-### Load necessary packages
+# Load necessary packages
 
 ```{r Load packages}
 library(tidyverse)
 library(readxl)
 ```
 
-### Importing different file types
+# Importing different file types
 
 ```{r Import data}
 # Practice import A
@@ -99,7 +99,7 @@ print(benthic_cover_df)
 Notice the difference between these two data sets. `benthic_cover` tells you its dimensions and variable types (character, double, etc.) below the column headers. 
 
 
-### Palmer Penguins data set
+## Palmer Penguins data set
 
 ```{r Load penguin data}
 library(palmerpenguins)
@@ -117,9 +117,9 @@ summary(penguins)
 
 Note that the `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `body_mass_g`, and `sex` variables have some NA values.
 
-## Foundational grammar: Slicing, filtering, sorting, and transforming
+# Foundational grammar: Slicing, filtering, sorting, and transforming
 
-### `select()` - isolating attributes
+## `select()` - isolating attributes
 
 Targets variables vertically:
 
@@ -137,7 +137,7 @@ clean_scientific_fields <- select(penguins, -year)
 glimpse(clean_scientific_fields)
 ```
 
-### `filter()`
+## `filter()`
 
 Isolates records (i.e. rows) horizontally based on targeted conditional parameters. R evaluates each row against a logical expression, keeping entries that are `TRUE` and dropping those that are `FALSE` or `NA` (i.e. those that do not meet the expression).
 
@@ -158,7 +158,7 @@ sub_islands <- filter(penguins, island %in% c("Dream", "Torgersen"))
 ```
 
 
-### `arrange()`
+## `arrange()`
 
 Alters how the rows of data are sorted within your data frame, without changing individual cell values
 
@@ -173,5 +173,68 @@ heaviest_first <- arrange(penguins, desc(body_mass_g))
 stratified_morphology <- arrange(penguins, species, desc(bill_length_mm))
 ```
 
-### Pipe operator (`|>`)
+## Pipe operator (`|>`)
+
+The pipe operator is a great way to chain multiple operations together. You read from left to right, or top to bottom. You take the data, *then* filter it, *then* mutate it to create a new column, *then* select the columns you need.
+
+The native R pipe syntax is `|>`, but there is another version built into the tidyverse with the magrittr package, which is also commonly used (`%>%`).
+
+Instead of writing:
+```{r no pipe operator}
+penguins_subset <- mutate(penguins, bill_ratio = bill_length_mm / bill_depth_mm)
+penguins_final <- filter(penguins_subset, species == "Adelie")
+```
+
+You can just write:
+
+```{r with pipe operator}
+penguins_final <- penguins |> 
+    mutate(bill_ratio = bill_length_mm / bill_depth_mm) |> 
+    filter(species == "Adelie")
+```
+
+## `mutate()`
+
+Used to calculate new variables based on ones that already exist in your data.
+
+```{r mutate()}
+penguin_ratios <- penguins |> 
+    mutate(body_mass_kg = body_mass_g / 1000,
+           bill_ratio = bill_length_mm / bill_depth_mm)
+
+glimpse(penguin_ratios)
+```
+
+
+# Data aggregation & ecological summarisation
+
+```{r group_by(), summarise()}
+# Grouping our active memory penguins by species
+grouped_penguins <- group_by(penguins, species)
+
+# Note that table looks similar, but metadata notes 'Groups: species [3]'
+print(grouped_penguins)
+
+# Collapsing groups into explicit summary metrics
+species_mass_summary <- summarise(grouped_penguins, 
+                                  mean_mass_g = mean(body_mass_g))
+print(species_mass_summary)
+```
+
+Adelie and Gentoo species data includes NA values - this is an R design feature called the **Missing Value Trap**. Any mathematical function of any kind (sum, mean, sd, etc.) will automatically return NA to prevent miscalculations. This can be overridden by explicitly declaring that missing cells should be dropped during calculations.
+
+```{r missing trap value}
+biological_signal <- penguins |> 
+    group_by(species, sex) |> 
+    summarise(
+        sample_size = n(),    # count total number of individuals per category
+        mean_mass_g = mean(body_mass_g, na.rm = TRUE),
+        sd_mass_g = sd(body_mass_g, na.rm = TRUE)       # standard deviation calculation
+    )
+
+print(biological_signal)
+```
+
+
+# Integrating data grammar with visual diagnostics
 
