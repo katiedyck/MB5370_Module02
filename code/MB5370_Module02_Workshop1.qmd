@@ -6,6 +6,7 @@ execute:
   echo: false
 format:
     html:
+        embed-resources: true
         code-fold: show
         code-summary: "Show code"
         code-tools: true
@@ -23,9 +24,6 @@ format:
         fig-height: 6
         fig-width: 10
         fig-cap-location: bottom
-        
-        df_print: paged
-
 ---
 
 ```{r setup, include=FALSE}
@@ -71,6 +69,7 @@ objects()
 ```{r Load packages}
 library(tidyverse)
 library(readxl)
+library(palmerpenguins)
 ```
 
 # Importing different file types
@@ -111,8 +110,9 @@ Notice the difference between these two data sets. `benthic_cover` tells you its
 
 ## Palmer Penguins data set
 
+(The library `palmerpenguins` must be installed and loaded to access the following dataset.)
+
 ```{r Load penguin data}
-library(palmerpenguins)
 
 # Load package data into active memory
 data("penguins")
@@ -248,7 +248,7 @@ print(biological_signal)
 
 # Visualizing the `penguins` data
 
-## Visualizing body size and shape:
+## Visualizing body size and shape
 
 ```{r visualizing body size & shape}
 penguin_mass_by_island <- penguins |> 
@@ -269,23 +269,110 @@ You can also pipe directly to visualization without creating an intermediate sum
 
 ```{r piping directly to visualization}
 mass_compare_plot <- penguins |> 
+    filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
     group_by(species, island) |> 
     summarize(
         mean_mass = mean(body_mass_g, na.rm = TRUE),
-        sd_mass = sd(body_mass_g, na.rm = TRUE),
         n = n(),
+        sd_mass = sd(body_mass_g, na.rm = TRUE),
         .groups = "drop"
     ) |> 
     ggplot(aes(x = species, y = mean_mass, colour = island)) +
-    geom_point(size = 3) +
+    geom_point(size = 3, position = position_dodge(width = 0.5)) +
     geom_errorbar(aes(ymin = mean_mass - sd_mass,
                       ymax = mean_mass + sd_mass),
-                  width = 0.2) +
+                  width = 0.2,
+                  position = position_dodge(width = 0.5)) +
     labs(title = "Mean Body Mass by Species and Island",
          x = "Species",
-         y = "Mean Body Mass (g)") +
-    theme_minimal()
+         y = "Mean Body Mass (g) ± SD ") +
+    theme_minimal() +
+    theme(plot.title = element_text(face = "bold"))
 
 mass_compare_plot
+```
+
+```{r}
+mass_compare_plot2 <- penguins |> 
+    filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
+    group_by(species, island) |> 
+    summarize(
+        mean_mass = mean(body_mass_g, na.rm = TRUE),
+        n = n(),
+        sd_mass = sd(body_mass_g, na.rm = TRUE),
+        se_mass = sd_mass / sqrt(n),
+        .groups = "drop"
+    ) |> 
+    ggplot(aes(x = species, y = mean_mass, colour = island)) +
+    geom_point(size = 2, position = position_dodge(width = 0.5)) +
+    geom_errorbar(aes(ymin = mean_mass - se_mass,
+                      ymax = mean_mass + se_mass),
+                  width = 0.2,
+                  position = position_dodge(width = 0.5)) +
+    labs(title = "Mean Body Mass by Species and Island",
+         x = "Species",
+         y = "Mean Body Mass (g) ± SE ") +
+    theme_minimal() +
+    theme(plot.title = element_text(face = "bold"))
+
+mass_compare_plot2
+```
+
+When we compare these two graphs side by side, we see that the standard *error* bars are much smaller than the standard *deviation* bars, which makes sense because the standard error is a measure of how precisely we have estimated the mean, while the standard deviation is a measure of how much variability there is in the data. The standard error will always be smaller than the standard deviation, especially as sample size increases.
+
+```{r}
+summary_SD <- penguins |> 
+    filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
+    group_by(species, island) |> 
+    summarize(
+        mean_mass = mean(body_mass_g, na.rm = TRUE),
+        n = n(),
+        sd_mass = sd(body_mass_g, na.rm = TRUE),
+        .groups = "drop"
+    )
+
+summary_SE <- penguins |> 
+    filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
+    group_by(species, island) |> 
+    summarize(
+        mean_mass = mean(body_mass_g, na.rm = TRUE),
+        n = n(),
+        sd_mass = sd(body_mass_g, na.rm = TRUE),
+        se_mass = sd_mass / sqrt(n),
+        .groups = "drop"
+    )
+
+print(summary_SD)
+print(summary_SE)
+```
+
+Looking at the summary tables, we can see that the standard error decreases as sample size increases (e.g. SE 73.5 for Adelie penguins on Biscoe island (n = 44) vs. SE 45.5 for Gentoo penguins on Biscoe island (n = 68)). These tables also tell us that as sample size (n) increases, so does the mean mass for each species on each island, which makes sense.
+
+
+# Saving, exporting, and version milestones
+
+```{r Saving tables}
+# Create output directories if they do not exist:
+if (!dir.exists("outputs/figures")) dir.create("outputs/figures", recursive = TRUE) # folder for figs
+if (!dir.exists("outputs/tables")) dir.create("outputs/tables", recursive = TRUE) # folder for tables
+if (!dir.exists("Rdata")) dir.create("Rdata", recursive = TRUE) # folder for Rdata objects
+
+# 1. Exporting our collapsed summary table as a universal flat text file
+write_csv(biological_signal, "outputs/penguin_species_mass_summary.csv")
+
+# 2. Saving our cleaned morphological cohort table as a native R binary file
+saveRDS(clean_scientific_fields, "outputs/clean_penguin_morphology_cohort.rds")
+```
+
+```{r Saving figures}
+ggsave("outputs/mass_compare_plot.png", 
+       plot = mass_compare_plot, 
+       width = 120, height = 120, 
+       units = "mm", dpi = 300)
+
+ggsave("outputs/mass_compare_plot2.png", 
+       plot = mass_compare_plot, 
+       width = 120, height = 120, 
+       units = "mm", dpi = 300)
 ```
 
