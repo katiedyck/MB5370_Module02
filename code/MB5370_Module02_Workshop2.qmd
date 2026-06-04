@@ -45,10 +45,11 @@ knitr::opts_chunk$set(
 ```
 
 ```{r load packages}
-# Load required packages
+# Load all required packages for this workshop
 library(tidyverse)  # includes `stringr` and `lubridate` packages
 library(here)
 library(readxl)
+library(palmerpenguins)
 ```
 
 # Tidying data
@@ -114,7 +115,7 @@ billboard |>
                values_to = "rank")
 ```
 
-As some songs are only on the billboard for a few weeks, there are many `NA` values in the `rank` column. We can use the `values_drop_na` argument in `pivot_longer` to drop these rows from the output.
+As some songs are only on the billboard for a few weeks, there are many `NA` values in the `rank` column. We can use the `values_drop_na` argument in `pivot_longer()` to drop these rows from the output.
 
 ```{r billboard pivot_longer drop_na}
 billboard |> 
@@ -124,7 +125,7 @@ billboard |>
                values_drop_na = TRUE)
 ```
 
-We can also convert some of the values in the "week" column from character to numeric using the `names_prefix` argument. This argument allows us to specify a string that will be removed from the values in the "week" column before they are converted to numeric.
+We can also convert some of the values in the `week` column from character to numeric using the `names_prefix()` argument. This argument allows us to specify a string that will be removed from the values in the `week` column before they are converted to numeric.
 
 ```{r mutate billboard}
 billboard |> 
@@ -139,7 +140,7 @@ billboard |>
 
 ## Widening datasets
 
-`pivot_wider` is used to widen datasets. It allows us to handle an observation that is spread across *multiple rows*. It takes key-value pairs and spreads them across multiple columns, *decreasing* the number of rows and *increasing* the number of columns. The dataset is split by the `names_from` argument, which specifies the name of the column that contains the names of the new columns. The `values_from` argument specifies the name of the column that contains the values that will be spread across the new columns.
+`pivot_wider()` is used to widen datasets. It allows us to handle an observation that is spread across *multiple rows*. It takes key-value pairs and spreads them across multiple columns, *decreasing* the number of rows and *increasing* the number of columns. The dataset is split by the `names_from` argument, which specifies the name of the column that contains the names of the new columns. The `values_from` argument specifies the name of the column that contains the values that will be spread across the new columns.
 
 ```{r cms_patient_experience}
 cms_patient_experience <- cms_patient_experience
@@ -165,4 +166,106 @@ cms_patient_experience |>
 
 
 # Pivot exercise with Palmer Penguins data
+
+```{r}
+penguins <- penguins
+penguins
+```
+
+We want to make a single plot that shows the distribution of *all* morphometric measurements (`bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, and `body_mass_g`). To plot using `facet_wrap()`, we need to stack the variables into 2 columns: one for measurement name, and one for numerical measurement value. 
+
+```{r lengthen penguins}
+penguins_long <- penguins |> 
+  pivot_longer(cols = c(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g),
+               names_to = "measurement_type",
+               values_to = "value")
+
+penguins_long
+```
+
+Using `penguins_long` data set, we can plot the distribution of all morphometric measurements using `ggplot` and `facet_wrap()`.
+
+```{r penguins plot with pivot_longer}
+penguins_long |> 
+  drop_na(value) |> 
+  ggplot(aes(x = value, fill = species)) +
+  geom_histogram(bins = 30, alpha = 0.7, colour = "black") +
+  facet_wrap(~ measurement_type, scales = "free_x") +
+  theme_minimal() +
+  labs(title = "Morphometric distributions across penguin species",
+       x = "Measurement value",
+       y = "Frequency") +
+  theme(plot.title = element_text(face = "bold")) +
+  scale_fill_discrete(name = "Species")
+
+```
+
+We can also widen the `penguins` data set with `pivot_wider()`. This can be useful when you need to present summary statistics as a **cross-tabulated matrix**. 
+
+```{r mass_summary penguins}
+mass_summary <- penguins |> 
+  drop_na(body_mass_g) |> 
+  group_by(species, island) |> 
+  summarise(mean_mass = mean(body_mass_g))
+
+mass_summary
+```
+
+To create a cross-tabulated matrix that is more appropriate for publication, we can use `pivot_wider()` to spread the `island` variable across multiple columns.
+
+```{r pivot_wider mass_penguins}
+mass_matrix <- mass_summary |> 
+  pivot_wider(names_from = island,     # which column provides new column headers
+              values_from = mean_mass)   # which columns provides values to fill new columns
+
+mass_matrix
+# NA values mean no penguins of that species were found on that island
+```
+
+
+# Separating and uniting data tables
+
+```{r}
+table3
+```
+
+## `separate()`
+
+The `rate` column needs to be split into a `cases` and `population` column. The `separate()` function from the `tidyr` package can be used to split a single column into multiple columns based on a separator. 
+
+```{r separate table3}
+table3 |> 
+  separate(rate, into = c("cases", "population"))
+```
+
+`separate()` defaults to splitting values by any non-alphanumeric character it sees. In `table3`, it split the `rate` column based on the "/" character. If we wanted to split the `rate` column based on a different character, we could use the `sep` argument to specify the separator.
+
+```{r}
+table3 |> 
+  separate(rate, into = c("cases", "population"), sep = "/")
+# gives the same output as the previous code chunk
+```
+
+The `cases` and `population` columns need to be converted to numeric types. They are currently character types because this is the default when using `separate()`. 
+
+```{r change column types table 3}
+table3 |> 
+  separate(rate, into = c("cases", "population"), sep = "/") |> 
+  mutate(cases = as.numeric(cases),
+         population = as.numeric(population))
+
+# OR
+
+table3 |> 
+  separate(rate, into = c("cases", "population"), sep = "/", convert = TRUE)
+```
+
+When you pass an integer to the `sep` argument, `separate()` will split the column at that position. For example, if we wanted to split the `year` column into a `century` and `year` column, we could use `sep = 2` to split the column after the first 2 characters.
+
+```{r separate by integers}
+table3 |> 
+  separate(year, into = c("century", "year"), sep = 2)
+```
+
+## `unite()`
 
