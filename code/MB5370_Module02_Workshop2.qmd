@@ -269,3 +269,149 @@ table3 |>
 
 ## `unite()`
 
+`unite()` is the opposite of `separate()`. It combines multiple columns into a single column. The `col` argument specifies the name of the new column that will be created, and the `sep` argument specifies the separator that will be used to combine the values from the original columns.
+
+```{r unite() table5}
+table5
+
+table5 |> 
+  unite(new, century, year, sep = "")   # no separator - default is "_"
+```
+
+
+# Wrangling strings and data
+
+## `stringr` package
+
+The `stringr` package contains functions for working with strings, all of which begin with "str_".
+
+```{r messy data frame}
+# Very messy data frame of field sites
+messy_sites <- tibble(
+  site_id = c(" Nelly Bay", "nelly_bay", "NELLY BAY", " Geoffrey_Bay ", "geoffrey bay")
+)
+
+print(messy_sites)
+
+# Using stringr within mutate to standardize the text
+clean_sites <- messy_sites |>
+  mutate(
+    # 1. Convert everything to lowercase
+    site_clean = str_to_lower(site_id),
+    # 2. Replace any spaces with underscores
+    site_clean = str_replace_all(site_clean, pattern = " ", replacement = "_"),
+    # 3. Trim any leading or trailing whitespace (invisible spaces at the ends)
+    site_clean = str_trim(site_clean),
+    # 4. Remove any trailing or leading underscores
+    site_clean = str_replace_all(site_clean, pattern = "^_+|_+$", replacement = ""),
+    # 5. Replace underscores with spaces
+    site_clean = str_replace_all(site_clean, pattern = "_", replacement = " "),
+    # 6. Convert to title case (first letter of each word capitalized)
+    site_clean = str_to_title(site_clean)
+  )
+
+print(clean_sites)
+```
+
+## `lubridate` package
+
+The `lubridate` package allows you to parse dates by spelling out the order of the components (year, month, day, hour, minute, second) in the date format. The functions for parsing dates are `ymd()`, `mdy()`, `dmy()`, `ymd_hms()`, etc.
+
+```{r dates}
+date_1 <- dmy("25/12/2026")
+date_2 <- ymd("2026-12-25")
+
+# R now recognizes these as identical Date objects
+date_1 == date_2
+```
+
+```{r dates 2}
+# A tibble of raw sensor data with a messy character timestamp
+sensor_data <- tibble(
+  raw_time = c("14-05-2026 08:30:00", "14-05-2026 08:45:00", "14-05-2026 09:00:00"),
+  temperature = c(24.5, 24.6, 24.4)
+)
+
+# Converting character strings to true POSIXct datetime objects
+sensor_clean <- sensor_data |>
+  mutate(
+    true_time = dmy_hms(raw_time)
+  )
+
+print(sensor_clean)
+```
+
+
+# Joining tables
+
+Sometimes data is split across multiple tables. For example, you might have a massive table of daily fish catch records that only lists a `site_code`, and a separate, smaller metadata table that contains the exact GPS coordinates and zoning status for those site codes. In order to model the data, the tables need to be joined together based on a **key**, or a common column that exists in both tables.
+
+```{r}
+# Table 1: Biological observation data
+observations <- tibble(
+  site_code = c("NB", "GB", "MI", "NB", "HB"),
+  species = c("Trout", "Snapper", "Trout", "Cod", "Trout"),
+  count = c(5, 2, 1, 3, 8)
+)
+
+print(observations)
+
+# Table 2: Spatial metadata
+site_metadata <- tibble(
+  site_code = c("NB", "GB", "MI", "RP", "WP"),
+  zone = c("Marine National Park", "Conservation Park", "Habitat Protection", "General Use", "Other Use"),
+  lat = c(-19.16, -19.15, -19.14, -19.12, -19.11)
+)
+
+print(site_metadata)
+```
+
+### The workhorses: `left_join()` and `right_join()`
+
+These two functions work the same way but in opposite directions. `left_join()` keeps all rows from the left table and only matching rows from the right table, while `right_join()` keeps all rows from the right table and only matching rows from the left table.
+
+```{r left_join}
+joined_data <- observations |> 
+  left_join(site_metadata, by = join_by(site_code))
+
+print(joined_data)
+```
+
+### The strict filter: `inner_join()`
+
+Only rows that have complete matches in both tables are kept when using `inner_join()`. All other observations are dropped.
+
+```{r inner_join}
+matched_data <- observations |>
+  inner_join(site_metadata, by = join_by(site_code))
+
+print(matched_data)
+```
+
+### The detective: `anti_join()`
+
+Rather than adding new columns, `anti_join()` filters the left table to *only* show rows that *do not* have a match in the right table. If you try a `left_join()` and end up with unexpected NA values, you can perform an `anti_join()` to find out exactly which site codes are misspelled or missing from your metadata table.
+
+```{r anti_join}
+# Which observations are missing from our metadata dictionary?
+missing_context <- observations |>
+  anti_join(site_metadata, by = join_by(site_code))
+
+print(missing_context)
+```
+
+# Handling missing values
+
+```{r}
+# Raw data from an old temperature logger
+logger_data <- tibble(
+  depth_m = c(10, 20, 30, 40),
+  temp_c = c(24.5, 24.1, -999, 23.5)) # -999 is a known sensor error code
+
+# Convert the -999 error codes to true NA values
+fixed_logger <- logger_data |>
+  mutate(temp_c = na_if(temp_c, -999))
+
+print(fixed_logger)
+```
+
