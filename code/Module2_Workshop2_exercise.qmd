@@ -1,0 +1,54 @@
+---
+title: "R for Marine Science - Workshop 2 Final Exercise "
+author: "Katie Dyck"
+date: "2026-06-04"
+execute:
+  echo: false
+format:
+    html:
+        embed-resources: true
+        code-fold: show
+        code-tools: true
+        code-block-bg: true
+        code-block-border-left: "darkgrey"
+        code-overflow: wrap
+        toc: true
+        number-sections: true
+        number-depth: 4
+        toc-location: left
+        toc-expand: 2
+        toc-title: Contents
+        syntax-highlighting: github
+        theme: cosmo
+        fig-height: 6
+        fig-width: 10
+        fig-cap-location: bottom
+---
+
+This is my code for the Keystone exercise "Estuary Fish Survey".
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  include = TRUE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+```{r load packages}
+# Load necessary packages
+library(tidyverse)  # includes `stringr` and `lubridate` packages
+library(here)
+library(readxl)
+```
+
+
+# Phase 1: Ingestion and Decontamination
+
+The first step is to load the datasets. 
+
+```{r load datasets}
+# Load the datasets
+read_xlsx(here::here("/Documents/MB5370/github/R4MarineScience/data/workshop2/estuary_catch_log.xlsx"))
+```
+
