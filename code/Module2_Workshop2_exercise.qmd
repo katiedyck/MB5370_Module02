@@ -25,7 +25,15 @@ format:
         fig-cap-location: bottom
 ---
 
-This is my code for the Keystone exercise "Estuary Fish Survey".
+# Introduction
+
+Here I will be wrangling 4 messy data sets ...
+
+# Housekeeping
+```{r Housekeeping}
+rm(list = ls())
+```
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -37,18 +45,58 @@ knitr::opts_chunk$set(
 
 ```{r load packages}
 # Load necessary packages
-library(tidyverse)  # includes `stringr` and `lubridate` packages
-library(here)
-library(readxl)
+library(tidyverse)  # includes stringr, lubridate, ggplot2, dplyr, etc.
+library(readxl)     # for reading .xlsx files
 ```
 
 
-# Phase 1: Ingestion and Decontamination
+# Part 1: Ingestion and Decontamination
 
-The first step is to load the datasets. 
+## Loading datasets
 
-```{r load datasets}
-# Load the datasets
-read_xlsx(here::here("/Documents/MB5370/github/R4MarineScience/data/workshop2/estuary_catch_log.xlsx"))
+The dataset *"estuary_catch_log.xlsx"* contains *four sheets* of data that we want to join into **one sheet**.
+
+```{r upload & join fish catch sheets data}
+# Use `purrr` package to load "estuary_catch_log.xlsx" file and join all 4 sheets
+
+file_path <- "../data/workshop2/estuary_catch_log.xlsx"
+catch_data <- excel_sheets(file_path) |> 
+    map_dfr(~ read_excel(path = file_path, sheet = .x))
+
+print(catch_data)
+
+unique(catch_data$site)    # The join was a success! All 4 sheets are now in 1 data table.
+```
+
+```{r load remaining datasets}
+metadata <- read_csv("../data/workshop2/estuary_metadata.csv")
+print(metadata)
+
+water_quality <- read_csv("../data/workshop2/estuary_sonde_data.csv")
+print(water_quality)
+
+dictionary <- read_csv("../data/workshop2/species_dictionary.csv")
+print(dictionary)
+```
+
+## Cleaning the data
+
+We want the site names to be the same across all data tables.
+
+```{r check site names}
+# Use `unique()` to check for each unique spelling of the river site names
+unique(catch_data$site)
+unique(metadata$site_name)
+unique(water_quality$site)
+```
+
+Using the `stringr` package we can make the site names uniform.
+
+```{r change site names}
+catch_data |> 
+    mutate(
+        # 1. Convert everything to lowercase
+        
+    )
 ```
 
