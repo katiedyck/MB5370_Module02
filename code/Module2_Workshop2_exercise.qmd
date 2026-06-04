@@ -34,7 +34,6 @@ Here I will be wrangling 4 messy data sets ...
 rm(list = ls())
 ```
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -50,13 +49,13 @@ library(readxl)     # for reading .xlsx files
 ```
 
 
-# Part 1: Ingestion and Decontamination
+# Part 1: Loading and Cleaning the data
 
-## Loading datasets
+## Loading the datasets
 
 The dataset *"estuary_catch_log.xlsx"* contains *four sheets* of data that we want to join into **one sheet**.
 
-```{r upload & join fish catch sheets data}
+```{r upload & join fish catch data}
 # Use `purrr` package to load "estuary_catch_log.xlsx" file and join all 4 sheets
 
 file_path <- "../data/workshop2/estuary_catch_log.xlsx"
@@ -79,24 +78,153 @@ dictionary <- read_csv("../data/workshop2/species_dictionary.csv")
 print(dictionary)
 ```
 
+
 ## Cleaning the data
 
 We want the site names to be the same across all data tables.
 
-```{r check site names}
-# Use `unique()` to check for each unique spelling of the river site names
-unique(catch_data$site)
-unique(metadata$site_name)
-unique(water_quality$site)
+```{r check data tables}
+# Use `unique()` to check for "messy" site and species names columns in the data tables
+
+unique(catch_data$site)     # needs to be cleaned
+unique(catch_data$species)  # needs to be cleaned
+
+unique(metadata$site_name)  # needs to be cleaned
+
+unique(water_quality$site)  # needs to be cleaned
+
+unique(dictionary$common_name)  # needs to be cleaned
 ```
 
-Using the `stringr` package we can make the site names uniform.
+Using the `stringr` package we can standardize the site and species names so they are the same across each data table.
 
-```{r change site names}
-catch_data |> 
+```{r clean catch_data site names}
+# Change site names in 'catch_data'
+
+catch_data <- catch_data |> 
     mutate(
-        # 1. Convert everything to lowercase
-        
+        # Replace spaces with underscores
+        site = str_replace_all(site, pattern = " ", replacement = "_"),
+        # Change text to lowercase
+        site = str_to_lower(site)
     )
+
+print(catch_data)
+unique(catch_data$site)   # all site names are now in title-case with spaces rather than underscores
 ```
+
+```{r clean catch_data species names}
+# Change species names in 'catch_data'
+
+catch_data <- catch_data |>
+    mutate(
+        # Change text to title case
+        species = str_to_lower(species),
+        # Replace spaces between words with underscore
+        species = str_replace_all(species, pattern = " ", replacement = "_")
+    )
+
+print(catch_data)
+
+unique(catch_data$species)      # species names are now clean
+```
+
+```{r clean metadata site names}
+# Clean site names in 'metadata'
+
+metadata <- metadata |> 
+    mutate(
+        # Replace spaces with underscores
+        site_name = str_replace_all(site_name, pattern = " ", replacement = "_"),
+        # Change text to lowercase
+        site_name = str_to_lower(site_name)
+    )
+
+print(metadata)
+
+unique(metadata$site_name)    # site names are now clean!
+```
+
+```{r clean water_quality site names}
+# Clean site names in water_quality
+
+water_quality <- water_quality |> 
+    mutate(
+        # Replace spaces between words with underscores
+        site = str_replace_all(site, pattern = " ", replacement = "_"),
+        # Change to lowercase
+        site = str_to_lower(site)
+    )
+
+print(water_quality)
+
+unique(water_quality$site)    # site names are now clean!
+```
+
+```{r clean dictionary common names}
+# Clean 'dictionary' common species names
+
+dictionary <- dictionary |> 
+    mutate(
+        # Replace spaces between words with underscores
+        common_name = str_replace_all(common_name, pattern = " ", replacement = "_"),
+        # Change to lowercase
+        common_name = str_to_lower(common_name)
+    )
+
+print(dictionary)
+
+unique(dictionary$common_name)
+```
+
+Species names and site names are now standardized across all 4 data tables.
+
+
+## Parsing Dates & Times
+
+```{r}
+glimpse(water_quality)
+```
+
+In the water quality data, the `timestamp` column needs to be parsed to a Date-Time object.
+
+```{r}
+# View the `timestamp` values
+head(water_quality$timestamp, n=20)
+```
+
+The `lubridate` package can be used to parse this column from character to Date-Time (`<dttm>`).
+
+```{r parse timestamp column}
+# Parse the `timestamp` column
+
+water_quality <- water_quality |> 
+    mutate(timestamp = dmy_hm(timestamp))   # current format: DD/MM/YYYY HH:MM
+
+print(water_quality)
+```
+
+## Hardware Errors
+
+There are some missing turbidity values in the `water_quality` data table because of occasional turbidity sensor failures that occurred. We need to find them and change them to true NA values so calculations can be performed properly.
+
+```{r}
+# Find -999.0 turbidity values in the water_quality data, and change them to true NA values
+water_quality |> 
+    filter(turbidity == -999.0) |> 
+    count()     # there are 567 rows with -999.0 recorded as turbidity value
+
+water_quality <- water_quality |> 
+    mutate(turbidity = na_if(turbidity, -999.0))
+
+# Check if -999.0 values were successfully converted to proper NA values
+water_quality |> 
+    filter(is.na(turbidity)) |> 
+    count()     # success!
+```
+
+
+# Part 2
+
+## Summarize water sensor data
 
