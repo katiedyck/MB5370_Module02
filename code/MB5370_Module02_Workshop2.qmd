@@ -47,6 +47,8 @@ knitr::opts_chunk$set(
 ```{r load packages}
 # Load required packages
 library(tidyverse)  # includes `stringr` and `lubridate` packages
+library(here)
+library(readxl)
 ```
 
 # Tidying data
@@ -80,7 +82,7 @@ The rules are interrelated because only 2 of the 3 rules can be followed at any 
 
 # Pivoting data
 
-`pivot_longer()` and `pivot_wider()` are used to reshape data tables. `pivot_longer()` is used to make a wide table longer, while `pivot_wider()` is used to make a long table wider.
+`pivot_longer()` and `pivot_wider()` are used to reshape data tables. Both functions are made available from the `tidyr` package, which is part of the `tidyverse`.
 
 ```{r pivot_longer()}
 table1 |> 
@@ -94,5 +96,73 @@ table2 |>
 ```
 
 
-# Lengthening datasets
+## Lengthening datasets
+
+`pivot_longer()` is used to lengthen datasets. It takes multiple columns and collapses them into key-value pairs, *increasing* the number of rows and *decreasing* the number of columns. The dataset is split by the `names_to` argument, which specifies the name of the new column that will contain the names of the original columns. The `values_to` argument specifies the name of the new column that will contain the values from the original columns.
+
+```{r billboard}
+billboard <- billboard
+billboard
+```
+
+In this dataset, each observation is a song, and the first 3 columns (`artist`, `track`, and `date.entered`) are variables that describe the song. The remaining columns (`wk1` to `wk76`) are not variables, but rather values *of* a variable (week). To tidy this dataset so that each row is a single observation, we can use `pivot_longer()` to collapse the `wk1` to `wk76` columns into key-value pairs.
+
+```{r billboard pivot_longer}
+billboard |> 
+  pivot_longer(cols = starts_with("wk"),
+               names_to = "week",
+               values_to = "rank")
+```
+
+As some songs are only on the billboard for a few weeks, there are many `NA` values in the `rank` column. We can use the `values_drop_na` argument in `pivot_longer` to drop these rows from the output.
+
+```{r billboard pivot_longer drop_na}
+billboard |> 
+  pivot_longer(cols = starts_with("wk"),
+               names_to = "week",
+               values_to = "rank",
+               values_drop_na = TRUE)
+```
+
+We can also convert some of the values in the "week" column from character to numeric using the `names_prefix` argument. This argument allows us to specify a string that will be removed from the values in the "week" column before they are converted to numeric.
+
+```{r mutate billboard}
+billboard |> 
+  pivot_longer(cols = starts_with("wk"),
+               names_to = "week",
+               values_to = "rank",
+               values_drop_na = TRUE,
+               names_prefix = "wk") |> 
+  mutate(week = as.numeric(week))
+```
+
+
+## Widening datasets
+
+`pivot_wider` is used to widen datasets. It allows us to handle an observation that is spread across *multiple rows*. It takes key-value pairs and spreads them across multiple columns, *decreasing* the number of rows and *increasing* the number of columns. The dataset is split by the `names_from` argument, which specifies the name of the column that contains the names of the new columns. The `values_from` argument specifies the name of the column that contains the values that will be spread across the new columns.
+
+```{r cms_patient_experience}
+cms_patient_experience <- cms_patient_experience
+cms_patient_experience
+```
+
+The unit being studied in the data set is an organization. In this format, though, each organization is spread across 6 rows with 1 row for each of the 6 measurements taken during the survey.
+
+```{r}
+cms_patient_experience |> 
+  distinct(measure_cd, measure_title)
+```
+
+
+To tidy this dataset so that each row is a single observation, we can use `pivot_wider()` to spread the values in the "measure" column across multiple columns.
+
+```{r cms_patient_experience pivot_wider}
+cms_patient_experience |> 
+  pivot_wider(id_cols = starts_with("org"),   # tells pivot_wider which columns have values that are unique to each row
+              names_from = measure_title,
+              values_from = prf_rate)
+```
+
+
+# Pivot exercise with Palmer Penguins data
 
