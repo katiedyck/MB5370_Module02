@@ -2,8 +2,6 @@
 title: "R for Marine Science - Workshop 2"
 author: "Katie Dyck"
 date: "2026-06-04"
-execute:
-  echo: false
 format:
     html:
         embed-resources: true
@@ -25,7 +23,7 @@ format:
         fig-cap-location: bottom
 ---
 
-## Introduction
+# Introduction
 
 This qmd file includes all material covered from the second "R for Marine Science" workshop. The material covered includes:
 
@@ -43,6 +41,38 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE)
 ```
+
+```{r Connect to GitHub, include=FALSE}
+# in the console:
+#   credentials::git_credential_ask()
+#   usethis::git_sitrep()
+
+# if error message comes up that default branch is origin when it should be "main", enter this in the console:
+#   usethis::git_default_branch_rediscover()
+
+# in the console:
+#   usethis::use_git()
+#   usethis::use_github()
+
+# in RStudio terminal:
+  # git remote add origin https://github.com/katiedyck/MB5370_Module02.git
+  # git push -u origin main
+  # git push
+```
+
+## Housekeeping
+```{r Clear session environment}
+# Inventory every active object currently residing in session RAM
+objects()
+
+# Purge global environment
+rm(list = ls())
+
+# Confirm that global session memory is now vacant
+objects()
+```
+
+## Load necessary packages
 
 ```{r load packages}
 # Load all required packages for this workshop
@@ -414,4 +444,3 @@ fixed_logger <- logger_data |>
 
 print(fixed_logger)
 ```
-
