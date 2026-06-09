@@ -2,13 +2,10 @@
 title: "R for Marine Science - Workshop 1"
 author: "Katie Dyck"
 date: "2026-06-03"
-execute:
-  echo: false
 format:
     html:
         embed-resources: true
         code-fold: show
-        code-summary: "Show code"
         code-tools: true
         code-block-bg: true
         code-block-border-left: "darkgrey"
@@ -26,17 +23,25 @@ format:
         fig-cap-location: bottom
 ---
 
+# Introduction
+
+This qmd file includes all material covered from the first "R for Marine Science" workshop. The material covered includes:
+
+- Importing different file types (`.csv`, `.txt`, `.xlsx`)
+- Foundational grammar for  slicing, filtering, sorting, and transforming data
+- Aggregating and summarizing data
+- Visualizing the `penguins` dataset from the `palmerpenguins` package
+- How to save and export datasets and plots
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = FALSE,
+  echo = TRUE,
   include = TRUE,
   message = FALSE,
   warning = FALSE)
 ```
 
-I created a new GitHub repository for this module & connected it to RStudio:
-
-```{r Connect to GitHub}
+```{r Connect to GitHub, include=FALSE}
 # in the console:
 #   credentials::git_credential_ask()
 #   usethis::git_sitrep()
@@ -56,9 +61,8 @@ I created a new GitHub repository for this module & connected it to RStudio:
 
 Data files (.csv, .txt, .xlsx) were copied from class repository "R4MarineScience" and added to the data folder in my repository for Module 2.
 
-```{r Clear session environment}
 ## Housekeeping
-
+```{r Clear session environment}
 # Inventory every active object currently residing in session RAM
 objects()
 
@@ -68,7 +72,7 @@ rm(list = ls())
 # Confirm that global session memory is now vacant
 objects()
 ```
-# Load necessary packages
+## Load necessary packages
 
 ```{r Load packages}
 library(tidyverse)
@@ -114,7 +118,7 @@ Notice the difference between these two data sets. `benthic_cover` tells you its
 
 ## Palmer Penguins data set
 
-(The library `palmerpenguins` must be installed and loaded to access the following dataset.)
+(The `palmerpenguins` library must be installed and loaded to access the following dataset.)
 
 ```{r Load penguin data}
 
