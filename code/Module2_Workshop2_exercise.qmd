@@ -279,7 +279,7 @@ print(catch_data_final)
 ```
 
 # Zero-catch framework
-```{r}
+```{r built zero-catch framework}
 catch_data_final |> 
   complete(
     nesting(site, date, 
@@ -291,13 +291,13 @@ catch_data_final |>
     count = coalesce(count, 0)
   )
 ```
-
-```{r}
+First check there is an actual difference in salinity among zones:
+```{r mean/sd/se salinity}
 # sal_sum
 catch_data_final |> 
   group_by(scientific_name, zone) |> 
   summarise(
-    # sem_salinity = sd(mean_salinity) / sqrt(n()),
+    # se_salinity = sd(mean_salinity) / sqrt(n()),
     sd_salinity = sd(mean_salinity, na.rm = TRUE),
     median_salinity = median(mean_salinity, na.rm = TRUE),
     .groups = "drop"
@@ -308,7 +308,7 @@ library(plotrix)
 catch_data_final |> 
   group_by(scientific_name, zone) |> 
   summarise(
-    sem_salinity = std.error(count),
+    se_salinity = std.error(count),
     # sd_salinity = sd(mean_salinity, na.rm = TRUE),
     median_salinity = median(mean_salinity, na.rm = TRUE),
     .groups = "drop"
