@@ -27,12 +27,13 @@ format:
 
 Here I will be wrangling 4 messy data files containing information on the relationship between water quality and predatory fish species present in the Ross River estuary gradient. All files will be wrangled so that different relationships can be examined:
 
-1. *estuary_catch_log.xlsx*: Field counts of fish species (common names) collected at different locations, spread across multiple sheets.
-2. *estuary_metadata.csv*: Spatial coordinates and estuary zones for each site.
-3. *estuary_sonde_data.csv*: 
-4. *species_dictionary.csv*: 
+1.  *estuary_catch_log.xlsx*: Field counts of fish species (common names) collected at different locations, spread across multiple sheets.
+2.  *estuary_metadata.csv*: Spatial coordinates and estuary zones for each site.
+3.  *estuary_sonde_data.csv*:
+4.  *species_dictionary.csv*:
 
 # Housekeeping
+
 ```{r Housekeeping}
 #| message: true
 #| warning: false
@@ -66,6 +67,7 @@ knitr::opts_chunk$set(
 ```
 
 # Packages
+
 ```{r load packages, eval=FALSE}
 library(tidyverse)  # includes stringr, lubridate, ggplot2, dplyr, purrr, etc.
 library(readxl)     # for reading .xlsx files
@@ -91,6 +93,7 @@ catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 4)
 ```
 
 ## Inspect individual sheets
+
 ```{r investigate indiv catch data sheets}
 print(catch1)
 print(catch2)
@@ -99,6 +102,7 @@ print(catch4)
 ```
 
 ## Bind rows together
+
 ```{r bind catch data rows}
 catch_data <- bind_rows(catch1, catch2, catch3, catch4)
 # Clean up the environment
@@ -106,6 +110,7 @@ rm(catch1, catch2, catch3, catch4)
 ```
 
 ## Examine catch data
+
 ```{r Examine catch data}
 print(catch_data)
 ```
@@ -121,7 +126,6 @@ catch_data |>
 ```
 
 We have 4 species as well as 4 sites which seem to be located at different points along the Ross River. We need the site names to have a uniform format; we can use the `stringr` package to make `site` names consistent so we can then use the taxonomic dictionary to translate to scientific names.
-
 
 ## Load metadata
 
@@ -188,6 +192,7 @@ str(sensor_raw)
 ```
 
 ### Notes
+
 - The site names look good; they match the names from the fish catch dataset.
 - Environmental variables need cleaning: some negative salinity values, some -999 turbidity values (failed values)
 - `timestamp` is a character-type column. We will probably want to parse this to a date or date-time column.
@@ -230,6 +235,7 @@ catch_data |>
 ```
 
 ## Standardize variable in catch log to match dictionaries
+
 ```{r clean catch species names}
 catch_data <- catch_data |>
   mutate(
@@ -241,13 +247,13 @@ catch_data <- catch_data |>
 ```
 
 ## Check common names in catch log match those in the taxonomic dictionary
+
 ```{r}
 catch_data |> 
   distinct(species)
 dictionary |>
   distinct(common_name)
 ```
-
 
 # Taxonomic Translation (Common to Scientific)
 
@@ -261,15 +267,17 @@ print(catch_data)
 
 ## Need to:
 
-1. Join with `metadata` and `sensor_daily` data
-2. Deal with implicit zero observations
-  - 4 x sp
-  - 4 x sites
-  - 30 surveys
+1.  Join with `metadata` and `sensor_daily` data
+2.  Deal with implicit zero observations
+
+- 4 x sp
+- 4 x sites
+- 30 surveys
 
 4*4*30
 
 ## join catch data with metadata and sensor data
+
 ```{r join catch data with metadata and sensor data}
 catch_data_final <- catch_data |> 
   left_join(metadata, by = join_by(site == site_name)) |> 
@@ -279,6 +287,7 @@ print(catch_data_final)
 ```
 
 # Zero-catch framework
+
 ```{r built zero-catch framework}
 catch_data_final |> 
   complete(
@@ -291,10 +300,11 @@ catch_data_final |>
     count = coalesce(count, 0)
   )
 ```
+
 First check there is an actual difference in salinity among zones:
+
 ```{r mean/sd/se salinity}
-# sal_sum
-catch_data_final |> 
+sal_sum <- catch_data_final |> 
   group_by(scientific_name, zone) |> 
   summarise(
     # se_salinity = sd(mean_salinity) / sqrt(n()),
@@ -303,15 +313,53 @@ catch_data_final |>
     .groups = "drop"
   )
 
+print(sal_sum)
+
 # Or with plotrix
-library(plotrix)
-catch_data_final |> 
-  group_by(scientific_name, zone) |> 
+# library(plotrix)
+# catch_data_final |> 
+#   group_by(scientific_name, zone) |> 
+#   summarise(
+#     se_salinity = std.error(count),
+#     # sd_salinity = sd(mean_salinity, na.rm = TRUE),
+#     median_salinity = median(mean_salinity, na.rm = TRUE),
+#     .groups = "drop"
+#   )
+```
+
+```{r}
+fish_stats <- catch_data_final |> 
+  group_by(zone, scientific_name) |> 
   summarise(
-    se_salinity = std.error(count),
-    # sd_salinity = sd(mean_salinity, na.rm = TRUE),
-    median_salinity = median(mean_salinity, na.rm = TRUE),
+    mean_catch = mean(count, na.rm = TRUE),
+    se_catch = sd(count, na.rm = TRUE) / sqrt(n()),
     .groups = "drop"
   )
 ```
 
+# Summary plots
+```{r salinity summary plot}
+sal_sum |> 
+  ggplot(aes(x = zone, y = median_salinity)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = median_salinity - sd_salinity,
+                    ymax = median_salinity + sd_salinity),
+                width = 0.2) +
+  theme_minimal() +
+  labs(title = "Median Salinity by Zone with Standard Deviation error bars",
+       x = "Zone",
+       y = "Median Salinity (± SD)") +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+```{r fish catch summary plot}
+fish_stats |> 
+  ggplot(aes(x = zone, y = mean_catch, fill = zone)) +
+  # add points from master data
+  geom_point(position = "dodge", size = 3, pch = 23) +
+  geom_errorbar(aes(ymin = mean_catch - se_catch,
+                    ymax = mean_catch + se_catch), width = 0.2) +
+  facet_wrap(~scientific_name) +
+  theme_minimal() +
+  labs(x = "Zone", y = "Mean Catch (± SE)")
+```
