@@ -298,7 +298,7 @@ catch_data_final |>
   )
 ```
 
-First check there is an actual difference in salinity among zones:
+We first want to check there is an actual difference in salinity among zones:
 
 ```{r mean/sd/se salinity}
 sal_sum <- catch_data_final |> 
@@ -324,39 +324,28 @@ print(sal_sum)
 #   )
 ```
 
-```{r}
-fish_stats <- catch_data_final |> 
-  group_by(zone, scientific_name) |> 
-  summarise(
-    mean_catch = mean(count, na.rm = TRUE),
-    se_catch = sd(count, na.rm = TRUE) / sqrt(n()),
-    .groups = "drop"
-  )
-```
-
-```{r}
-catch_data_final |> 
-  group_by(zone) |> 
-  summarise(
-    mean_catch = mean(count, na.rm = TRUE),
-    se_catch = sd(count, na.rm = TRUE) / sqrt(n()),
-    .groups = "drop"
-  )
-```
-
-# Summary plots
+## Make a point and error plot
 ```{r salinity summary plot}
 sal_sum |> 
   ggplot(aes(x = zone, y = median_salinity)) +
   geom_point() +
-  geom_errorbar(aes(ymin = median_salinity - sd_salinity,
-                    ymax = median_salinity + sd_salinity),
-                width = 0.2) +
+  geom_errorbar(aes(ymin = median_salinity - sd_salinity, ymax = median_salinity + sd_salinity), width = 0.2) +
   theme_minimal() +
   labs(title = "Median Salinity by Zone with Standard Deviation error bars",
        x = "Zone",
-       y = "Median Salinity (± SD)") +
+       y = "Median Salinity (± SD) (ppt)") +
   theme(plot.title = element_text(face = "bold"))
+```
+
+## Now calculate mean and SE catch
+```{r}
+fish_stats <- catch_data_final |> 
+  group_by(zone, scientific_name) |> 
+  summarise(
+    mean_catch = mean(count),
+    se_catch = sd(count) / sqrt(n()),
+    .groups = "drop"
+  )
 ```
 
 ```{r fish catch summary plot}
