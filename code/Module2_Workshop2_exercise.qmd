@@ -1,9 +1,7 @@
 ---
-title: "R for Marine Science - Workshop 2 Final Exercise "
+title: "R for Marine Science - Workshop 2 Final Exercise"
 author: "Katie Dyck"
 date: "2026-06-04"
-execute:
-  echo: false
 format:
     html:
         embed-resources: true
@@ -27,10 +25,17 @@ format:
 
 # Introduction
 
-Here I will be wrangling 4 messy data sets ...
+Here I will be wrangling 4 messy data files containing information on the relationship between water quality and predatory fish species present in the Ross River estuary gradient. All files will be wrangled so that different relationships can be examined:
+
+1. *estuary_catch_log.xlsx*: Field counts of fish species (common names) collected at different locations, spread across multiple sheets.
+2. *estuary_metadata.csv*: Spatial coordinates and estuary zones for each site.
+3. *estuary_sonde_data.csv*: 
+4. *species_dictionary.csv*: 
 
 # Housekeeping
 ```{r Housekeeping}
+#| message: true
+#| warning: false
 rm(list = ls())
 ```
 
@@ -42,189 +47,271 @@ knitr::opts_chunk$set(
   warning = FALSE)
 ```
 
-```{r load packages}
-# Load necessary packages
-library(tidyverse)  # includes stringr, lubridate, ggplot2, dplyr, etc.
+```{r Connect to GitHub, include=FALSE}
+# in the console:
+#   credentials::git_credential_ask()
+#   usethis::git_sitrep()
+
+# if error message comes up that default branch is origin when it should be "main", enter this in the console:
+#   usethis::git_default_branch_rediscover()
+
+# in the console:
+#   usethis::use_git()
+#   usethis::use_github()
+
+# in RStudio terminal:
+  # git remote add origin https://github.com/katiedyck/MB5370_Module02.git
+  # git push -u origin main
+  # git push
+```
+
+# Packages
+```{r load packages, eval=FALSE}
+library(tidyverse)  # includes stringr, lubridate, ggplot2, dplyr, purrr, etc.
 library(readxl)     # for reading .xlsx files
 ```
 
+# Loading and Cleaning the data
 
-# Part 1: Loading and Cleaning the data
+## Load files
 
-## Loading the datasets
+The catch data is divided across 4 sheets that we want to join together into one.
 
-The dataset *"estuary_catch_log.xlsx"* contains *four sheets* of data that we want to join into **one sheet**.
+```{r upload & join fish catch data, echo=FALSE}
+catch1 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 1)
+catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 2)
+catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 3)
+catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 4)
 
-```{r upload & join fish catch data}
+
 # Use `purrr` package to load "estuary_catch_log.xlsx" file and join all 4 sheets
+# file_path <- "../data/workshop2/estuary_catch_log.xlsx"
+# catch_data <- excel_sheets(file_path) |>
+#     map_dfr(~read_excel(path = file_path, sheet = .x))
+```
 
-file_path <- "../data/workshop2/estuary_catch_log.xlsx"
-catch_data <- excel_sheets(file_path) |> 
-    map_dfr(~ read_excel(path = file_path, sheet = .x))
+## Inspect individual sheets
+```{r investigate indiv catch data sheets}
+print(catch1)
+print(catch2)
+print(catch3)
+print(catch4)
+```
 
+## Bind rows together
+```{r bind catch data rows}
+catch_data <- bind_rows(catch1, catch2, catch3, catch4)
+# Clean up the environment
+rm(catch1, catch2, catch3, catch4)
+```
+
+## Examine catch data
+```{r Examine catch data}
 print(catch_data)
-
-unique(catch_data$site)    # The join was a success! All 4 sheets are now in 1 data table.
 ```
 
-```{r load remaining datasets}
+We want to know how many unique levels of `site` and `species` we have; we can't tell how many there are from these outputs. One option is to check these columns explicitly using `distinct()`:
+
+```{r unique species and sites}
+catch_data |> 
+  distinct(site)
+
+catch_data |> 
+  distinct(species)
+```
+
+We have 4 species as well as 4 sites which seem to be located at different points along the Ross River. We need the site names to have a uniform format; we can use the `stringr` package to make `site` names consistent so we can then use the taxonomic dictionary to translate to scientific names.
+
+
+## Load metadata
+
+```{r load remaining datasets, echo=FALSE}
 metadata <- read_csv("../data/workshop2/estuary_metadata.csv")
-print(metadata)
-
-water_quality <- read_csv("../data/workshop2/estuary_sonde_data.csv")
-print(water_quality)
-
-dictionary <- read_csv("../data/workshop2/species_dictionary.csv")
-print(dictionary)
+glimpse(metadata)
 ```
 
-
-## Cleaning the data
-
-We want the site names to be the same across all data tables.
+## Clean metadata
 
 ```{r check data tables}
-# Use `unique()` to check for "messy" site and species names columns in the data tables
-
-unique(catch_data$site)     # needs to be cleaned
-unique(catch_data$species)  # needs to be cleaned
-
-unique(metadata$site_name)  # needs to be cleaned
-
-unique(water_quality$site)  # needs to be cleaned
-
-unique(dictionary$common_name)  # needs to be cleaned
+metadata |> 
+  distinct(site_name)
 ```
 
-Using the `stringr` package we can standardize the site and species names so they are the same across each data table.
+Site names in `metadata` are all over the place. We need to standardize them.
 
 ```{r clean catch_data site names}
-# Change site names in 'catch_data'
-
 catch_data <- catch_data |> 
-    mutate(
+  mutate(
         # Replace spaces with underscores
         site = str_replace_all(site, pattern = " ", replacement = "_"),
         # Change text to lowercase
         site = str_to_lower(site)
-    )
-
-print(catch_data)
-unique(catch_data$site)   # all site names are now in title-case with spaces rather than underscores
-```
-
-```{r clean catch_data species names}
-# Change species names in 'catch_data'
-
-catch_data <- catch_data |>
-    mutate(
-        # Change text to title case
-        species = str_to_lower(species),
-        # Replace spaces between words with underscore
-        species = str_replace_all(species, pattern = " ", replacement = "_")
-    )
-
-print(catch_data)
-
-unique(catch_data$species)      # species names are now clean
+    ) |> 
+  # Convert all chr to fct
+  mutate(across(where(is.character), as_factor))
 ```
 
 ```{r clean metadata site names}
-# Clean site names in 'metadata'
-
 metadata <- metadata |> 
-    mutate(
+  mutate(
         # Replace spaces with underscores
         site_name = str_replace_all(site_name, pattern = " ", replacement = "_"),
         # Change text to lowercase
         site_name = str_to_lower(site_name)
-    )
-
-print(metadata)
-
-unique(metadata$site_name)    # site names are now clean!
+    ) |> 
+  # Convert all chr to fct
+  mutate(across(where(is.character), as_factor))
 ```
 
-```{r clean water_quality site names}
-# Clean site names in water_quality
+## Recheck:
 
-water_quality <- water_quality |> 
+```{r recheck}
+catch_data |> 
+  distinct(site)
+
+metadata |> 
+  distinct(site_name)
+```
+
+## Load taxonomic dictionary data
+
+```{r load dictionary data}
+dictionary <- read_csv("../data/workshop2/species_dictionary.csv")
+glimpse(dictionary)
+```
+
+## Wrangle sensor data
+
+```{r load sensor data, echo=FALSE}
+sensor_raw <- read_csv("../data/workshop2/estuary_sonde_data.csv")
+str(sensor_raw)
+```
+
+### Notes
+- The site names look good; they match the names from the fish catch dataset.
+- Environmental variables need cleaning: some negative salinity values, some -999 turbidity values (failed values)
+- `timestamp` is a character-type column. We will probably want to parse this to a date or date-time column.
+
+### Clean sensor data
+
+```{r clean sensory data}
+sensor_data <- sensor_raw |> 
     mutate(
-        # Replace spaces between words with underscores
-        site = str_replace_all(site, pattern = " ", replacement = "_"),
-        # Change to lowercase
-        site = str_to_lower(site)
+      # Parse the character string to Day/Month/Year Hour:Minute
+      datetime = dmy_hm(timestamp),
+      # Chance -999.0 to NA values
+      turbidity = na_if(turbidity, -999),
+      # Convert negative salinity values to NA
+      salinity = ifelse(salinity < 0, NA, salinity)
     )
-
-print(water_quality)
-
-unique(water_quality$site)    # site names are now clean!
 ```
 
-```{r clean dictionary common names}
-# Clean 'dictionary' common species names
-
-dictionary <- dictionary |> 
-    mutate(
-        # Replace spaces between words with underscores
-        common_name = str_replace_all(common_name, pattern = " ", replacement = "_"),
-        # Change to lowercase
-        common_name = str_to_lower(common_name)
-    )
-
-print(dictionary)
-
-unique(dictionary$common_name)
-```
-
-Species names and site names are now standardized across all 4 data tables.
-
-
-## Parsing Dates & Times
+### Summarize 15-minute sensor data into daily means
 
 ```{r}
-glimpse(water_quality)
+sensor_daily <- sensor_data |>
+  mutate(date = as_date(floor_date(datetime, "day"))) |>
+  group_by(site, date) |>
+  summarise(
+    mean_temp = mean(temperature, na.rm = TRUE),
+    mean_salinity = mean(salinity, na.rm = TRUE),
+    mean_turbidity = mean(turbidity, na.rm = TRUE),
+    .groups = "drop")
 ```
 
-In the water quality data, the `timestamp` column needs to be parsed to a Date-Time object.
+## Standardize catch species names to match dictionary
 
 ```{r}
-# View the `timestamp` values
-head(water_quality$timestamp, n=20)
+dictionary |> 
+  distinct(common_name)
+
+catch_data |> 
+  distinct(species)
 ```
 
-The `lubridate` package can be used to parse this column from character to Date-Time (`<dttm>`).
-
-```{r parse timestamp column}
-# Parse the `timestamp` column
-
-water_quality <- water_quality |> 
-    mutate(timestamp = dmy_hm(timestamp))   # current format: DD/MM/YYYY HH:MM
-
-print(water_quality)
+## Standardize variable in catch log to match dictionaries
+```{r clean catch species names}
+catch_data <- catch_data |>
+  mutate(
+    site = str_to_lower(str_trim(site)),
+    site = str_replace_all(site, " ", "_"),
+    species = str_to_lower(str_trim(species)),
+    species = str_replace_all(species, " ", "_")
+  )
 ```
 
-## Hardware Errors
+## Check common names in catch log match those in the taxonomic dictionary
+```{r}
+catch_data |> 
+  distinct(species)
+dictionary |>
+  distinct(common_name)
+```
 
-There are some missing turbidity values in the `water_quality` data table because of occasional turbidity sensor failures that occurred. We need to find them and change them to true NA values so calculations can be performed properly.
+
+# Taxonomic Translation (Common to Scientific)
+
+```{r taxonomic translation}
+catch_data <- catch_data |>
+  mutate(common_name = species) |>
+  left_join(dictionary, by = join_by(common_name))
+
+print(catch_data)
+```
+
+## Need to:
+
+1. Join with `metadata` and `sensor_daily` data
+2. Deal with implicit zero observations
+  - 4 x sp
+  - 4 x sites
+  - 30 surveys
+
+4*4*30
+
+## join catch data with metadata and sensor data
+```{r join catch data with metadata and sensor data}
+catch_data_final <- catch_data |> 
+  left_join(metadata, by = join_by(site == site_name)) |> 
+  left_join(sensor_daily, by = join_by(site, date))
+
+print(catch_data_final)
+```
+
+# Zero-catch framework
+```{r}
+catch_data_final |> 
+  complete(
+    nesting(site, date, 
+           # lat, lon, 
+            zone, mean_temp, mean_salinity, mean_turbidity), scientific_name
+  ) |>
+  mutate(
+    # Convert the resulting NA counts to 0
+    count = coalesce(count, 0)
+  )
+```
 
 ```{r}
-# Find -999.0 turbidity values in the water_quality data, and change them to true NA values
-water_quality |> 
-    filter(turbidity == -999.0) |> 
-    count()     # there are 567 rows with -999.0 recorded as turbidity value
+# sal_sum
+catch_data_final |> 
+  group_by(scientific_name, zone) |> 
+  summarise(
+    # sem_salinity = sd(mean_salinity) / sqrt(n()),
+    sd_salinity = sd(mean_salinity, na.rm = TRUE),
+    median_salinity = median(mean_salinity, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-water_quality <- water_quality |> 
-    mutate(turbidity = na_if(turbidity, -999.0))
-
-# Check if -999.0 values were successfully converted to proper NA values
-water_quality |> 
-    filter(is.na(turbidity)) |> 
-    count()     # success!
+# Or with plotrix
+library(plotrix)
+catch_data_final |> 
+  group_by(scientific_name, zone) |> 
+  summarise(
+    sem_salinity = std.error(count),
+    # sd_salinity = sd(mean_salinity, na.rm = TRUE),
+    median_salinity = median(mean_salinity, na.rm = TRUE),
+    .groups = "drop"
+  )
 ```
-
-
-# Part 2
-
-## Summarize water sensor data
 
