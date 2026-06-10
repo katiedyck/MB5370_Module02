@@ -33,7 +33,6 @@ Here I will be wrangling 4 messy data files containing information on the relati
 4.  *species_dictionary.csv*:
 
 # Housekeeping
-
 ```{r Housekeeping}
 #| message: true
 #| warning: false
@@ -67,8 +66,7 @@ knitr::opts_chunk$set(
 ```
 
 # Packages
-
-```{r load packages, eval=FALSE}
+```{r load packages}
 library(tidyverse)  # includes stringr, lubridate, ggplot2, dplyr, purrr, etc.
 library(readxl)     # for reading .xlsx files
 ```
@@ -84,7 +82,6 @@ catch1 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 1)
 catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 2)
 catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 3)
 catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 4)
-
 
 # Use `purrr` package to load "estuary_catch_log.xlsx" file and join all 4 sheets
 # file_path <- "../data/workshop2/estuary_catch_log.xlsx"
@@ -337,6 +334,16 @@ fish_stats <- catch_data_final |>
   )
 ```
 
+```{r}
+catch_data_final |> 
+  group_by(zone) |> 
+  summarise(
+    mean_catch = mean(count, na.rm = TRUE),
+    se_catch = sd(count, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  )
+```
+
 # Summary plots
 ```{r salinity summary plot}
 sal_sum |> 
@@ -355,11 +362,23 @@ sal_sum |>
 ```{r fish catch summary plot}
 fish_stats |> 
   ggplot(aes(x = zone, y = mean_catch, fill = zone)) +
+  geom_line(group = 1) +
   # add points from master data
-  geom_point(position = "dodge", size = 3, pch = 23) +
-  geom_errorbar(aes(ymin = mean_catch - se_catch,
-                    ymax = mean_catch + se_catch), width = 0.2) +
-  facet_wrap(~scientific_name) +
+  geom_point(data = catch_data_final, aes(x = zone, y = count),
+             position = position_jitter(width = 0.2), size = 1, alpha = 0.5, inherit.aes = FALSE) +
+  geom_point(position = "dodge", size = 4, pch = 23) +
+  geom_errorbar(aes(ymin = mean_catch - se_catch, ymax = mean_catch + se_catch), 
+                position = position_dodge(0.9), width = 0.2) +
+  facet_wrap(~scientific_name, scales = "fixed") +
   theme_minimal() +
-  labs(x = "Zone", y = "Mean Catch (± SE)")
+  theme(
+    strip.text = element_text(face = "italic", size = 10, colour = "grey20"),
+    legend.position = "none",
+    plot.title = element_text(face = "bold")
+  ) +
+  labs(title = "Predatory Fish Abundance across Estuarine Salinity Gradients",
+       subtitle = "Ross River Estuarine System, May 2026",
+       x = "Spatial Zone",
+       y = "Mean Catch per Day (± SE)",
+       fill = "Spatial Zone")
 ```
