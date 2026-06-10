@@ -42,6 +42,13 @@ knitr::opts_chunk$set(
   warning = FALSE)
 ```
 
+## Housekeeping
+```{r Clear session environment}
+#| message: true
+#| warning: false
+rm(list = ls())
+```
+
 ```{r Connect to GitHub, include=FALSE}
 # in the console:
 #   credentials::git_credential_ask()
@@ -60,19 +67,7 @@ knitr::opts_chunk$set(
   # git push
 ```
 
-## Housekeeping
-```{r Clear session environment}
-# Inventory every active object currently residing in session RAM
-objects()
-
-# Purge global environment
-rm(list = ls())
-
-# Confirm that global session memory is now vacant
-objects()
-```
-
-## Load necessary packages
+## Load packages
 
 ```{r load packages}
 # Load all required packages for this workshop
