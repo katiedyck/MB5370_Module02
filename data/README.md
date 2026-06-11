@@ -1,1 +1,1 @@
-This folder is for storing project data
+Data files (.csv, .txt, .xlsx, etc.) for R4MS module workshops.
