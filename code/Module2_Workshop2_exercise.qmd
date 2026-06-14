@@ -1,40 +1,33 @@
 ---
-title: "R4MS - Workshop 2 Final Exercise"
+title: "R4MS - Final Exercise"
 author: "Katie Dyck"
 date: "2026-06-04"
 format:
-    html:
-        embed-resources: true
-        code-fold: show
-        code-tools: true
-        code-block-bg: true
-        code-block-border-left: "darkgrey"
-        code-overflow: wrap
-        toc: true
-        toc-location: left
-        toc-expand: 2
-        number-sections: true
-        number-depth: 4
-        toc-title: Contents
-        syntax-highlighting: github
-        theme: cosmo
-        fig-height: 6
-        fig-width: 10
-        fig-cap-location: bottom
-editor_options: 
-    chunk_output_type: inline
+  html:
+    embed-resources: true
+    code-fold: show
+    code-copy: hover
+    code-block-bg: true
+    code-block-border-left: "grey25"
+    code-overflow: wrap
+    toc: true
+    number-sections: true
+    number-depth: 4
+    toc-location: left
+    toc-expand: 3
+    toc-title: Contents
+    syntax-highlighting: github
+    theme: cosmo
+    title-block-banner: true
+    fig-height: 6
+    fig-width: 10
+    fig-cap-location: bottom
 ---
 
 # Introduction
 
 Here we will be wrangling messy data files on water quality and predatory fish species from the Ross River estuary fish surveys. We know that there are 4 survey sites, 4 species, and 30 days of sampling. One of the files contains metadata on the sites and sensor data on the environmental conditions at each site.
 
-# Housekeeping
-```{r Housekeeping}
-#| message: true
-#| warning: false
-rm(list = ls())
-```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -42,6 +35,16 @@ knitr::opts_chunk$set(
   include = TRUE,
   message = FALSE,
   warning = FALSE)
+```
+
+# Housekeeping
+
+Purge the global environment with the command `rm(list = ls())`.
+
+```{r Housekeeping, echo=FALSE}
+#| message: true
+#| warning: false
+rm(list = ls())
 ```
 
 ```{r Connect to GitHub, include=FALSE}
@@ -62,8 +65,11 @@ knitr::opts_chunk$set(
   # git push
 ```
 
-# Packages
-```{r packages}
+# Load packages
+
+The `tidyverse` and `readxl` package libraries must be installed and loaded for this exercise.
+
+```{r packages, echo=FALSE}
 library(tidyverse)  # includes stringr, lubridate, ggplot2, dplyr, purrr, etc.
 library(readxl)     # for reading .xlsx files
 ```
@@ -74,9 +80,10 @@ library(readxl)     # for reading .xlsx files
 
 The catch data is divided across 4 sheets in one excel file.
 
-Load sheets individually:
-
 ```{r load catch data}
+#| code-fold: true
+
+# Load sheets individually:
 catch1 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 1)
 catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 2)
 catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 3)
@@ -112,11 +119,11 @@ rm(catch1, catch2, catch3, catch4)
 
 ## Examine catch data
 
-```{r Examine catch data}
+```{r Examine catch data, echo=FALSE}
 print(catch_data)
 ```
 
-We want to know how many levels of `site` and `species` we have, which we can't tell how many there are from these outputs. One option is to check these columns explicitly using `distinct()`:
+We want to know how many levels of `site` and `species` we have, which we can't tell from this output. One option is to check these columns explicitly using `distinct()`.
 
 ```{r unique species and sites}
 #| code-fold: true
@@ -131,13 +138,13 @@ catch_data |>
 ### Next steps for catch data
 
 We need the site names to have a uniform format. It looks like sites correspond to unique zones on the Ross River, but we need to load the metadata to confirm this.
-We can use the `stringr` package to make `site` names consistent so we can then load the taxonomic dictionary file to translate common to scientific species names.
+We can use the `stringr` package to make site names consistent so we can then load the taxonomic dictionary file to translate common to scientific species names.
 
 ## Load metadata
 
 ```{r load remaining datasets, echo=FALSE}
 metadata <- read_csv("../data/workshop2/estuary_metadata.csv")
-glimpse(metadata)
+print(metadata)
 ```
 
 ## Clean metadata
@@ -153,9 +160,11 @@ Site names in `metadata` are all over the place. We need to standardize them so 
 
 ### Standardize site names in catch data and metadata
 
-Aside from simply standardizing the site names, we also want to convert the character variables to factors.
+*Aside from simply standardizing the site names, we also want to convert the character variables to factors.*
 
 ```{r clean catch_data site names}
+#| code-fold: true
+
 catch_data <- catch_data |> 
   mutate(
         # Replace spaces with underscores
@@ -168,6 +177,8 @@ catch_data <- catch_data |>
 ```
 
 ```{r clean metadata site names}
+#| code-fold: true
+
 metadata <- metadata |> 
   mutate(
         # Replace spaces with underscores
@@ -197,8 +208,9 @@ Site names are now standardized across the catch data and metadata files.
 
 ```{r load dictionary data, echo=FALSE}
 dictionary <- read_csv("../data/workshop2/species_dictionary.csv")
-glimpse(dictionary)
+print(dictionary)
 ```
+
 ## Standardize species (common) names in catch data
 
 The common species names are already in a standardized format. We need to standardize the species names in the catch data to match. 
@@ -216,7 +228,8 @@ catch_data |>
   distinct(species)
 ```
 
-### Create new variable ("scientific_name") in catch log by joining with taxonomic dictionary 
+## Create new variable ("scientific_name") in catch log by joining with taxonomic dictionary 
+
 ```{r join-species-dict}
 #| code-fold: true
 
@@ -225,27 +238,29 @@ catch_data <- catch_data |>
   left_join(dictionary, by = join_by(common_name))
 ```
 
-```{r}
-glimpse(catch_data)
+```{r, echo=FALSE}
+print(catch_data)
 ```
 
 Looks good - the species and site names are fixed.
 
-## Load and wrangle sensor data
+## Load sensor data
 
 ```{r load sensor data, echo=FALSE}
 sensor_raw <- read_csv("../data/workshop2/estuary_sonde_data.csv")
-str(sensor_raw)
+glimpse(sensor_raw)
 ```
 
-- Sonde data was collected every 15 minutes for the same 4 sites across the 30 days of sampling. The data was sourced in a daily format, and outliers were removed.
-  - `timestamp` is a character-type column. We will probably want to parse this to a date or date-time column.
-- There are three different environmental variables measured: *temperature*, *salinity*, and *turbidity*.
-  - Environmental variables need cleaning: some negative salinity values, some -999 turbidity values (failed values).
-- **Could investigate effects of all three on fish spp abundance or pick one? Need to think about prior research and hypotheses etc.**
+* Sonde data was collected every 15 minutes for the same 4 sites across the 30 days of sampling. The data was sourced in a daily format, and outliers were removed.
+  + Note that `timestamp` is a character-type column. We will probably want to parse this to a date or date-time column.
+* Three different environmental variables were measured: *temperature*, *salinity*, and *turbidity*.
+  + Environmental variables need cleaning: some negative salinity values, some -999 turbidity values (failed values).
+* **Could investigate effects of all three on fish spp abundance or pick one? Need to think about prior research and hypotheses etc.**
 
 
 ## Wrangle sensor data
+
+Using the `mutate()` verb, we can create a POSIXct-type column for the timestamp data, change all -999 turbidity values to true NA values, and change all negative salinity values to be NA.
 
 ```{r clean sensor data}
 #| code-fold: true
@@ -265,6 +280,12 @@ print(sensor_data)
 
 ### Summarize 15-minute sensor data into daily means
 
+We want to create a second data table of the sensor data summarized by date.
+
+1. Mutate the `datetime` variable to create a `date` column .
+2. Group by `site` and `date`.
+3. Use the `summarise()` verb to create a column for mean temperature, mean salinity, and mean turbidity for each site on each date.
+
 ```{r summ 15min sensor data}
 #| code-fold: true
 
@@ -282,17 +303,21 @@ print(sensor_daily)
 
 # Join catch data with metadata and sensor data
 
+Left join the catch data with the metadata and daily sensor data tables to create a finalized data table with all relevant information.
+
 ```{r join catch data with metadata and sensor data}
+#| code-fold: true
+
 catch_data_final <- catch_data |> 
   left_join(metadata, by = join_by(site == site_name)) |> 
   left_join(sensor_daily, by = join_by(site, date))
 
-print(catch_data_final)
+glimpse(catch_data_final)
 ```
 
 Note that we only have 427 rows of data...4 species, 4 sites, and 30 surveys = 4 * 4 * 30 = **480**! There should be 480 rows in our data table.
 
-Some days there were no species counted at some sites, so these rows were omitted from the data. We need to wrangle the data so that zero counts are represented as 0 rather than NA. This is important when it comes time to data visualization because we want to be able to distinguish between true absenses (0) and missing data (NA).
+Some days there were no species counted at some sites, so these rows were omitted from the data. We need to wrangle the data so that zero counts are represented as 0 and not NA. This is important when it comes time to visualizing the data because we want to be able to distinguish between true absences (0) and missing data (NA).
 
 # Wrangle final dataset
 
@@ -310,14 +335,14 @@ catch_data_final <- catch_data_final |>
     count = coalesce(count, 0)
   )
 
-print(catch_data_final)
+glimpse(catch_data_final)
 ```
 
 **WE HAVE SUCCESSFULLY WRANGLED THE DATA!**
 
 # Analyzing the Data
 
-We first want to check if there is an actual difference in the environmental variables among zones:
+We first want to check if there is an actual difference in the environmental variables among zones.
 
 ## Salinity
 
@@ -364,6 +389,7 @@ sal_sum |>
 As expected, there are significant differences in salinity between zones of the Ross River. We also know there are differences between species in terms of their response to salinity gradients.
 
 ## Turbidity
+
 ```{r turbidity plot}
 #| code-fold: true
 
@@ -374,6 +400,8 @@ turb_sum <- catch_data_final |>
     median_turbidity = median(mean_turbidity, na.rm = TRUE),
     .groups = "drop"
   )
+
+print(turb_sum)
 
 turb_sum |>
   ggplot(aes(x = zone, y = median_turbidity)) +
@@ -398,6 +426,8 @@ temp_sum <- catch_data_final |>
     median_temperature = median(mean_temp, na.rm = TRUE),
     .groups = "drop"
   )
+
+print(temp_sum)
 
 temp_sum |>
   ggplot(aes(x = zone, y = median_temperature)) +
@@ -475,3 +505,5 @@ fish_stats |>
     fill = "Spatial Zone"
     )
 ```
+
+From this plot we can see that *Acanthopagrus spp.* and *Lutjanus argentimaculatus* have very a very similar abundance across the different spatial zones of the Ross River. *Lates calcarifer* was twice as abundant in the upstream spatial zone compared to all other zones, implying that this species prefers very low salinity concentrations. *Platycephalus spp.* was twice as abundant in the marine spatial zone than all other zones, implying that this species prefers high salinity concentrations.
