@@ -1,26 +1,27 @@
 ---
-title: "R for Marine Science - Workshop 1"
+title: "R4MS - Workshop 1"
 author: "Katie Dyck"
 date: "2026-06-03"
 format:
-    html:
-        embed-resources: true
-        code-fold: show
-        code-tools: true
-        code-block-bg: true
-        code-block-border-left: "darkgrey"
-        code-overflow: wrap
-        toc: true
-        number-sections: true
-        number-depth: 4
-        toc-location: left
-        toc-expand: 2
-        toc-title: Contents
-        syntax-highlighting: github
-        theme: cosmo
-        fig-height: 6
-        fig-width: 10
-        fig-cap-location: bottom
+  html:
+      embed-resources: true
+      code-fold: show
+      code-copy: hover
+      code-block-bg: true
+      code-block-border-left: "grey25"
+      code-overflow: wrap
+      toc: true
+      number-sections: true
+      number-depth: 4
+      toc-location: left
+      toc-expand: 3
+      toc-title: Contents
+      syntax-highlighting: github
+      theme: cosmo
+      title-block-banner: true
+      fig-height: 6
+      fig-width: 10
+      fig-cap-location: bottom
 ---
 
 # Introduction
@@ -35,7 +36,7 @@ This qmd file includes all material covered from the first "R for Marine Science
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,
+  echo = FALSE,
   include = TRUE,
   message = FALSE,
   warning = FALSE)
@@ -61,8 +62,13 @@ knitr::opts_chunk$set(
 
 Data files (.csv, .txt, .xlsx) were copied from class repository "R4MarineScience" and added to the data folder in my repository for Module 2.
 
-## Housekeeping
+# Housekeeping
+
+Purge the global environment with the command `rm(list = ls())`.
+
 ```{r Clear session environment}
+#| output: false
+
 # Inventory every active object currently residing in session RAM
 objects()
 
@@ -72,7 +78,9 @@ rm(list = ls())
 # Confirm that global session memory is now vacant
 objects()
 ```
-## Load necessary packages
+# Packages
+
+The `tidyverse`, `readxl`, and `palmerpenguins` package libraries are needed for this workshop.
 
 ```{r Load packages}
 library(tidyverse)
@@ -82,31 +90,47 @@ library(palmerpenguins)
 
 # Importing different file types
 
-```{r Import data}
+* .csv files can be imported with `read_csv()`.
+* .txt files can be imported with `read_tsv()`.
+* .xlsx files can be imported with `read_excel()`.
+
+```{r Import data, echo=TRUE}
+#| code-fold: true
+
 # Practice import A
-benthic_cover <- read_csv("../data/reef_cover_log.csv")
+benthic_cover <- read_csv(here::here("data/workshop1/reef_cover_log.csv"))
+print(benthic_cover)
 
 # Practice import B
-acoustic_stream <- read_tsv(here::here("data/acoustic_telemetry_stream.txt"))
+acoustic_stream <- read_tsv(here::here("data/workshop1/acoustic_telemetry_stream.txt"))
+print(acoustic_stream)
 
 # Practice import C
-fisheries_annual <- read_excel(here::here("data/fish_catch_data.xlsx"), sheet = "Commercial_2026")
+fisheries_annual <- read_excel(here::here("data/workshop1/fish_catch_data.xlsx"), sheet = "Commercial_2026")
+print(fisheries_annual)
 
 # Read in mangrove data
-mangrove_data <- read_csv(here::here("data/mangrove_survey_raw.csv"))
-mangrove_data
+mangrove_data <- read_csv(here::here("data/workshop1/mangrove_survey_raw.csv"))
+print(mangrove_data)
+```
+For the mangrove data, we need to include additional arguments so that the first 5 lines of the dataset are ignored. These lines are just comments that are not part of the data.
+
+```{r mangrove data, echo=TRUE}
+#| code-fold: true
 
 # Use args in read_csv() to read mangrove_data properly
-mangrove_data <- read_csv(here::here("data/mangrove_survey_raw.csv"),
+mangrove_data <- read_csv(here::here("data/workshop1/mangrove_survey_raw.csv"),
                           skip = 5,       # skip the first 5 lines of field notes
                           na = c(".", "NA", "9999", "ND", "blank"))      # convert known text alternatives to true NA
-mangrove_data
+print(mangrove_data)
 ```
 
 All 4 data sets are tibbles.
 You can turn tibbles, which are `tidyverse` data objects, into a data frame:
 
-```{r Covert tibble to data frame}
+```{r Covert tibble to data frame, echo=TRUE}
+#| code-fold: true
+
 benthic_cover_df <- as.data.frame(benthic_cover)
 
 print(benthic_cover)
@@ -116,32 +140,30 @@ print(benthic_cover_df)
 Notice the difference between these two data sets. `benthic_cover` tells you its dimensions and variable types (character, double, etc.) below the column headers. 
 
 
-## Palmer Penguins data set
+## Palmer Penguins dataset
 
-(The `palmerpenguins` library must be installed and loaded to access the following dataset.)
+The `penguins` dataset from the `palmerpenguins` package library contains measurements of penguin species found near Palmer Station in Antarctica.
 
 ```{r Load penguin data}
-
 # Load package data into active memory
 data("penguins")
 
 # Examine dataset structure
 glimpse(penguins)       # tidyverse version
-str(penguins)           # base R version
 
 # Generate an exploratory summary matrix
 summary(penguins)
 ```
 
-Note that the `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `body_mass_g`, and `sex` variables have some NA values.
+* Note that the `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `body_mass_g`, and `sex` variables have some NA values.
 
 # Foundational grammar: Slicing, filtering, sorting, and transforming
 
-## `select()` - isolating attributes
+## `select()`
 
-Targets variables vertically:
+This verb allows you to vertically slice datasets, isolating columns by variable names.
 
-```{r select()}
+```{r select(), echo=TRUE}
 # Vertically slice specific variables by name
 morphology_metrics <- select(penguins, species, bill_length_mm, bill_depth_mm, body_mass_g)
 glimpse(morphology_metrics)
@@ -157,55 +179,62 @@ glimpse(clean_scientific_fields)
 
 ## `filter()`
 
-Isolates records (i.e. rows) horizontally based on targeted conditional parameters. R evaluates each row against a logical expression, keeping entries that are `TRUE` and dropping those that are `FALSE` or `NA` (i.e. those that do not meet the expression).
+This verb isolates records (rows) horizontally based on conditional parameters. R evaluates each row against a logical expression, keeping entries that are `TRUE` and dropping those that are `FALSE` or `NA` (i.e. those that do not meet the conditions of the expression).
 
-```{r filter()}
+```{r filter(), echo=TRUE}
 # Isolate observations belonging to a single categorical target group
 adelie_cohort <- filter(penguins, species == "Adelie")
+glimpse(adelie_cohort)
 
 # Filter out individuals using continuous numerical boundary thresholds
 # Keeps only large penguins whose mass exceeds 4500 g
 heavy_penguins <- filter(penguins, body_mass_g > 4500)
+glimpse(heavy_penguins)
 
 # Combine multiple conditional parameters across separate attributes
 # Keep records that match Gentoo penguins sampled explicitly on Biscoe Island
 biscoe_gentoo <- filter(penguins, species == "Gentoo" & island == "Biscoe")
+glimpse(biscoe_gentoo)
 
 # Search for rows matching multiple targeting flags within an explicit set
 sub_islands <- filter(penguins, island %in% c("Dream", "Torgersen"))
+glimpse(sub_islands)
 ```
 
 
 ## `arrange()`
 
-Alters how the rows of data are sorted within your data frame, without changing individual cell values
+This verb alters how the rows of data are sorted within your data frame, without changing individual cell values
 
-```{r arrange()}
+```{r arrange(), echo=TRUE}
 # Sort penguins by ascending body mass (Default setting: smallest mass first)
 lightest_first <- arrange(penguins, body_mass_g)
+glimpse(lightest_first)
 
 # Sort penguins in descending sequence using the desc() layout wrapper
 heaviest_first <- arrange(penguins, desc(body_mass_g))
+glimpse(heaviest_first)
 
 # Execute nested sorting criteria: group by species, then sort by descending bill length
 stratified_morphology <- arrange(penguins, species, desc(bill_length_mm))
+glimpse(stratified_morphology)
 ```
 
 ## Pipe operator (`|>`)
 
 The pipe operator is a great way to chain multiple operations together. You read from left to right, or top to bottom. You take the data, *then* filter it, *then* mutate it to create a new column, *then* select the columns you need.
 
-The native R pipe syntax is `|>`, but there is another version built into the tidyverse with the magrittr package, which is also commonly used (`%>%`).
+The native R pipe syntax is `|>`, but there is another version built into the tidyverse with the `magrittr` package, which is also commonly used (`%>%`).
 
 Instead of writing:
-```{r no pipe operator}
+```{r no pipe operator, echo=TRUE}
 penguins_subset <- mutate(penguins, bill_ratio = bill_length_mm / bill_depth_mm)
 penguins_final <- filter(penguins_subset, species == "Adelie")
 ```
 
 You can just write:
 
-```{r with pipe operator}
+```{r with pipe operator, echo=TRUE}
 penguins_final <- penguins |> 
     mutate(bill_ratio = bill_length_mm / bill_depth_mm) |> 
     filter(species == "Adelie")
@@ -213,9 +242,9 @@ penguins_final <- penguins |>
 
 ## `mutate()`
 
-Used to calculate new variables based on ones that already exist in your data.
+This verb is used to calculate new variables based on ones that already exist in your data.
 
-```{r mutate()}
+```{r mutate(), echo=TRUE}
 penguin_ratios <- penguins |> 
     mutate(body_mass_kg = body_mass_g / 1000,
            bill_ratio = bill_length_mm / bill_depth_mm)
@@ -224,9 +253,11 @@ glimpse(penguin_ratios)
 ```
 
 
-# Data aggregation & ecological summarisation
+# Data aggregation & ecological summarization
 
-```{r group_by(), summarise()}
+```{r group_by(), summarise(), echo=TRUE}
+#| code-fold: true
+
 # Grouping our active memory penguins by species
 grouped_penguins <- group_by(penguins, species)
 
@@ -241,7 +272,9 @@ print(species_mass_summary)
 
 Adelie and Gentoo species data includes NA values - this is an R design feature called the **Missing Value Trap**. Any mathematical function of any kind (sum, mean, sd, etc.) will automatically return NA to prevent miscalculations. This can be overridden by explicitly declaring that missing cells should be dropped during calculations.
 
-```{r missing trap value}
+```{r missing trap value, echo=TRUE}
+#| code-fold: true
+
 biological_signal <- penguins |> 
     group_by(species, sex) |> 
     summarise(
@@ -258,7 +291,9 @@ print(biological_signal)
 
 ## Visualizing body size and shape
 
-```{r visualizing body size & shape}
+```{r visualizing body size & shape, echo=TRUE}
+#| code-fold: true
+
 penguin_mass_by_island <- penguins |> 
     group_by(species, island) |> 
     summarise(mean_mass_g = mean(body_mass_g, na.rm = TRUE))
@@ -269,13 +304,15 @@ print(penguin_mass_by_island)
 ggplot(penguin_mass_by_island, aes(x = species, y = mean_mass_g)) +
     geom_boxplot() +
     facet_wrap(~ island) +
-    labs(x = "Species", y = "Mean Body Mass (g)", title = "Mean Body Mass (g) of Penguin Species found at Palmer Research \nStation, Antarctica") +
+    labs(x = "Species", y = "Mean Body Mass (g)", title = "Mean body mass of Penguin Species found at Palmer Research Station, Antarctica") +
     theme(plot.title = element_text(face = "bold"))
 ```
 
 You can also pipe directly to visualization without creating an intermediate summary table:
 
-```{r piping directly to visualization}
+```{r piping directly to visualization, echo=TRUE}
+#| code-fold: true
+
 mass_compare_plot <- penguins |> 
     filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
     group_by(species, island) |> 
@@ -302,7 +339,9 @@ mass_compare_plot
 
 ## **Completed morphological plot and summary table**
 
-```{r}
+```{r echo=TRUE}
+#| code-fold: true
+
 mass_compare_plot2 <- penguins |> 
     filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
     group_by(species, island) |> 
@@ -328,9 +367,11 @@ mass_compare_plot2 <- penguins |>
 mass_compare_plot2
 ```
 
-When we compare these two graphs side by side, we see that the standard *error* bars are much smaller than the standard *deviation* bars, which makes sense because the standard error is a measure of how precisely we have estimated the mean, while the standard deviation is a measure of how much variability there is in the data. The standard error will always be smaller than the standard deviation, especially as sample size increases.
+When we compare the error bar graphs side-by-side, we see that the standard *error* bars are much smaller than the standard *deviation* bars, which makes sense. Standard error is a measure of how precisely we have estimated the mean, while standard deviation is a measure of how much variability there is in the data. The standard error will always be smaller than the standard deviation, especially as the sample size increases.
 
-```{r}
+```{r, echo=TRUE}
+#| code-fold: true
+
 summary_SD <- penguins |> 
     filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
     group_by(species, island) |> 
@@ -352,20 +393,23 @@ summary_SE <- penguins |>
         .groups = "drop"
     )
 
-print(summary_SD)
 print(summary_SE)
 ```
 
-Looking at the summary tables, we can see that the standard error decreases as sample size increases (e.g. SE 73.5 for Adelie penguins on Biscoe island (n = 44) vs. SE 45.5 for Gentoo penguins on Biscoe island (n = 68)). These tables also tell us that as sample size (n) increases, so does the mean mass for each species on each island, which makes sense.
+Looking at the summary table, we can see that the standard error decreases as sample size (n) increases (e.g. SE 73.5 for Adelie penguins on Biscoe island (n = 44) vs. SE 45.5 for Gentoo penguins on Biscoe island (n = 68)). This table also tell us that as n increases, so does the mean mass for each species on each island, which makes sense.
 
 
 # Saving, exporting, and version milestones
 
-```{r Saving tables}
+We can save our figures and tables to our GitHub repository by creating an "output" folder in our directory.
+
+```{r Saving tables, echo=TRUE}
+#| code-fold: true
+
 # Create output directories if they do not exist:
-if (!dir.exists("outputs/figures")) dir.create("outputs/figures", recursive = TRUE) # folder for figs
-if (!dir.exists("outputs/tables")) dir.create("outputs/tables", recursive = TRUE) # folder for tables
-if (!dir.exists("Rdata")) dir.create("Rdata", recursive = TRUE) # folder for Rdata objects
+if (!dir.exists("outputs/figures")) dir.create("outputs/figures", recursive = TRUE)   # folder for figs
+if (!dir.exists("outputs/tables")) dir.create("outputs/tables", recursive = TRUE)     # folder for tables
+if (!dir.exists("Rdata")) dir.create("Rdata", recursive = TRUE)   # folder for Rdata objects
 
 # 1. Exporting our collapsed summary table as a universal flat text file
 write_csv(biological_signal, "outputs/penguin_species_mass_summary.csv")
