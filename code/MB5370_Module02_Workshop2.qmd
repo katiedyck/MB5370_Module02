@@ -1,26 +1,27 @@
 ---
-title: "R for Marine Science - Workshop 2"
+title: "R4MS - Workshop 2"
 author: "Katie Dyck"
 date: "2026-06-04"
 format:
-    html:
-        embed-resources: true
-        code-fold: show
-        code-tools: true
-        code-block-bg: true
-        code-block-border-left: "darkgrey"
-        code-overflow: wrap
-        toc: true
-        number-sections: true
-        number-depth: 4
-        toc-location: left
-        toc-expand: 2
-        toc-title: Contents
-        syntax-highlighting: github
-        theme: cosmo
-        fig-height: 6
-        fig-width: 10
-        fig-cap-location: bottom
+  html:
+      embed-resources: true
+      code-fold: show
+      code-copy: hover
+      code-block-bg: true
+      code-block-border-left: "grey25"
+      code-overflow: wrap
+      toc: true
+      number-sections: true
+      number-depth: 4
+      toc-location: left
+      toc-expand: 3
+      toc-title: Contents
+      syntax-highlighting: github
+      theme: cosmo
+      title-block-banner: true
+      fig-height: 6
+      fig-width: 10
+      fig-cap-location: bottom
 ---
 
 # Introduction
@@ -42,8 +43,11 @@ knitr::opts_chunk$set(
   warning = FALSE)
 ```
 
-## Housekeeping
-```{r Clear session environment}
+# Housekeeping
+
+Purge the global environment with the command `rm(list = ls())`.
+
+```{r Clear session environment, echo=FALSE}
 #| message: true
 #| warning: false
 rm(list = ls())
@@ -67,10 +71,11 @@ rm(list = ls())
   # git push
 ```
 
-## Load packages
+# Load packages
 
-```{r load packages}
-# Load all required packages for this workshop
+The `tidyverse`, `here`, `readxl`, and `palmerpenguins` package libraries must be installed and loaded for this module.
+
+```{r load packages, echo=FALSE}
 library(tidyverse)  # includes `stringr` and `lubridate` packages
 library(here)
 library(readxl)
@@ -82,6 +87,8 @@ library(palmerpenguins)
 This is what a tidy data table looks like:
 
 ```{r tidy table example}
+#| code-fold: true
+
 table1 <- table1
 print(table1)
 ```
@@ -89,6 +96,8 @@ print(table1)
 This is what an *untidy* data table looks like:
 
 ```{r untidy table examples}
+#| code-fold: true
+
 table2 <- table2
 print(table2)
 
@@ -108,7 +117,7 @@ The rules are interrelated because only 2 of the 3 rules can be followed at any 
 
 # Pivoting data
 
-`pivot_longer()` and `pivot_wider()` are used to reshape data tables. Both functions are made available from the `tidyr` package, which is part of the `tidyverse`.
+`pivot_longer()` and `pivot_wider()` are used to reshape data tables. Both functions are made available from the `tidyr` package, which is part of the `tidyverse` library.
 
 ```{r pivot_longer()}
 table1 |> 
@@ -126,14 +135,16 @@ table2 |>
 
 `pivot_longer()` is used to lengthen datasets. It takes multiple columns and collapses them into key-value pairs, *increasing* the number of rows and *decreasing* the number of columns. The dataset is split by the `names_to` argument, which specifies the name of the new column that will contain the names of the original columns. The `values_to` argument specifies the name of the new column that will contain the values from the original columns.
 
-```{r billboard}
+```{r billboard, echo=FALSE}
 billboard <- billboard
 billboard
 ```
 
-In this dataset, each observation is a song, and the first 3 columns (`artist`, `track`, and `date.entered`) are variables that describe the song. The remaining columns (`wk1` to `wk76`) are not variables, but rather values *of* a variable (week). To tidy this dataset so that each row is a single observation, we can use `pivot_longer()` to collapse the `wk1` to `wk76` columns into key-value pairs.
+In the `billboard` dataset, each observation is a song, and the first 3 columns (`artist`, `track`, and `date.entered`) are variables that describe the song. The remaining columns (`wk1` to `wk76`) are not variables, but rather values *of* a variable (week). To tidy this dataset so that each row is a single observation, we can use `pivot_longer()` to collapse the `wk1` to `wk76` columns into key-value pairs.
 
 ```{r billboard pivot_longer}
+#| code-fold: true
+
 billboard |> 
   pivot_longer(cols = starts_with("wk"),
                names_to = "week",
@@ -143,6 +154,8 @@ billboard |>
 As some songs are only on the billboard for a few weeks, there are many `NA` values in the `rank` column. We can use the `values_drop_na` argument in `pivot_longer()` to drop these rows from the output.
 
 ```{r billboard pivot_longer drop_na}
+#| code-fold: true
+
 billboard |> 
   pivot_longer(cols = starts_with("wk"),
                names_to = "week",
@@ -153,6 +166,8 @@ billboard |>
 We can also convert some of the values in the `week` column from character to numeric using the `names_prefix()` argument. This argument allows us to specify a string that will be removed from the values in the `week` column before they are converted to numeric.
 
 ```{r mutate billboard}
+#| code-fold: true
+
 billboard |> 
   pivot_longer(cols = starts_with("wk"),
                names_to = "week",
@@ -165,24 +180,29 @@ billboard |>
 
 ## Widening datasets
 
-`pivot_wider()` is used to widen datasets. It allows us to handle an observation that is spread across *multiple rows*. It takes key-value pairs and spreads them across multiple columns, *decreasing* the number of rows and *increasing* the number of columns. The dataset is split by the `names_from` argument, which specifies the name of the column that contains the names of the new columns. The `values_from` argument specifies the name of the column that contains the values that will be spread across the new columns.
+`pivot_wider()` is used to widen datasets. It allows us to handle a single observation that is spread across *multiple rows*. It takes key-value pairs and spreads them across multiple columns, *decreasing* the number of rows and *increasing* the number of columns. 
 
-```{r cms_patient_experience}
+The dataset is split by the `names_from` argument, which specifies the name of the column that contains the names of the new columns. The `values_from` argument specifies the name of the column that contains the values that will be spread across the new columns.
+
+```{r cms_patient_experience, echo=FALSE}
 cms_patient_experience <- cms_patient_experience
 cms_patient_experience
 ```
 
-The unit being studied in the data set is an organization. In this format, though, each organization is spread across 6 rows with 1 row for each of the 6 measurements taken during the survey.
+The unit being studied in the `cms_patient_experience` dataset is an organization. In the current format, though, each organization is spread across 6 rows with 1 row for each of the 6 measurements taken during the survey.
 
 ```{r}
+#| code-fold: true
+
 cms_patient_experience |> 
   distinct(measure_cd, measure_title)
 ```
 
-
-To tidy this dataset so that each row is a single observation, we can use `pivot_wider()` to spread the values in the "measure" column across multiple columns.
+To tidy this dataset so that each row is a single observation, we use `pivot_wider()` to spread the values in the `measure` column across multiple columns.
 
 ```{r cms_patient_experience pivot_wider}
+#| code-fold: true
+
 cms_patient_experience |> 
   pivot_wider(id_cols = starts_with("org"),   # tells pivot_wider which columns have values that are unique to each row
               names_from = measure_title,
@@ -192,7 +212,7 @@ cms_patient_experience |>
 
 # Pivot exercise with Palmer Penguins data
 
-```{r}
+```{r echo=FALSE}
 penguins <- penguins
 penguins
 ```
@@ -200,6 +220,8 @@ penguins
 We want to make a single plot that shows the distribution of *all* morphometric measurements (`bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, and `body_mass_g`). To plot using `facet_wrap()`, we need to stack the variables into 2 columns: one for measurement name, and one for numerical measurement value. 
 
 ```{r lengthen penguins}
+#| code-fold: true
+
 penguins_long <- penguins |> 
   pivot_longer(cols = c(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g),
                names_to = "measurement_type",
@@ -208,26 +230,48 @@ penguins_long <- penguins |>
 penguins_long
 ```
 
-Using `penguins_long` data set, we can plot the distribution of all morphometric measurements using `ggplot` and `facet_wrap()`.
+Using the transformed data table, `penguins_long`, we can plot the distribution of all morphometric measurements.
 
 ```{r penguins plot with pivot_longer}
-penguins_long |> 
-  drop_na(value) |> 
+#| code-fold: true
+
+penguins_long |>
+  drop_na(value) |>
+  mutate(
+    # Create a new factor variable with desired labels for facets
+    measurement_type_labeled = factor(measurement_type,
+      levels = c(
+        "bill_length_mm", "bill_depth_mm",
+        "flipper_length_mm", "body_mass_g"
+      ),
+      labels = c(
+        "Bill Length (mm)", "Bill Depth (mm)",
+        "Flipper Length (mm)", "Body Mass (g)"
+      )
+    )
+  ) |>
   ggplot(aes(x = value, fill = species)) +
   geom_histogram(bins = 30, alpha = 0.7, colour = "black") +
-  facet_wrap(~ measurement_type, scales = "free_x") +
+  # Use the new labeled variable for faceting
+  facet_wrap(~ measurement_type_labeled, scales = "free_x") +
   theme_minimal() +
-  labs(title = "Morphometric distributions across penguin species",
-       x = "Measurement value",
-       y = "Frequency") +
-  theme(plot.title = element_text(face = "bold")) +
+  labs(
+    title = "Morphometric distributions across penguin species",
+    x = "Measurement value",
+    y = "Frequency"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    strip.text = element_text(face = "italic", colour = "grey20")
+  ) +
   scale_fill_discrete(name = "Species")
-
 ```
 
-We can also widen the `penguins` data set with `pivot_wider()`. This can be useful when you need to present summary statistics as a **cross-tabulated matrix**. 
+We can also widen the `penguins` data set to present summary statistics. This is known as a **cross-tabulated matrix**. 
 
 ```{r mass_summary penguins}
+#| code-fold: true
+
 mass_summary <- penguins |> 
   drop_na(body_mass_g) |> 
   group_by(species, island) |> 
@@ -239,6 +283,8 @@ mass_summary
 To create a cross-tabulated matrix that is more appropriate for publication, we can use `pivot_wider()` to spread the `island` variable across multiple columns.
 
 ```{r pivot_wider mass_penguins}
+#| code-fold: true
+
 mass_matrix <- mass_summary |> 
   pivot_wider(names_from = island,     # which column provides new column headers
               values_from = mean_mass)   # which columns provides values to fill new columns
@@ -250,7 +296,7 @@ mass_matrix
 
 # Separating and uniting data tables
 
-```{r}
+```{r echo=FALSE}
 table3
 ```
 
@@ -259,19 +305,24 @@ table3
 The `rate` column needs to be split into a `cases` and `population` column. The `separate()` function from the `tidyr` package can be used to split a single column into multiple columns based on a separator. 
 
 ```{r separate table3}
+#| code-fold: true
+
 table3 |> 
   separate(rate, into = c("cases", "population"))
 ```
 
-`separate()` defaults to splitting values by any non-alphanumeric character it sees. In `table3`, it split the `rate` column based on the "/" character. If we wanted to split the `rate` column based on a different character, we could use the `sep` argument to specify the separator.
+`separate()` defaults to splitting values by any non-alphanumeric character it sees. In this instance, it split the `rate` column based on the "/" character. If we wanted to split the `rate` column based on a different character, we could use the `sep` argument to specify the separator.
 
 ```{r}
+#| output: false
+#| code-fold: true
+
 table3 |> 
   separate(rate, into = c("cases", "population"), sep = "/")
 # gives the same output as the previous code chunk
 ```
 
-The `cases` and `population` columns need to be converted to numeric types. They are currently character types because this is the default when using `separate()`. 
+The `cases` and `population` columns need to be converted to numeric types. They are currently character types because this is the default when using `separate()`. There are 2 ways this can be done:
 
 ```{r change column types table 3}
 table3 |> 
@@ -288,6 +339,8 @@ table3 |>
 When you pass an integer to the `sep` argument, `separate()` will split the column at that position. For example, if we wanted to split the `year` column into a `century` and `year` column, we could use `sep = 2` to split the column after the first 2 characters.
 
 ```{r separate by integers}
+#| code-fold: true
+
 table3 |> 
   separate(year, into = c("century", "year"), sep = 2)
 ```
@@ -296,8 +349,12 @@ table3 |>
 
 `unite()` is the opposite of `separate()`. It combines multiple columns into a single column. The `col` argument specifies the name of the new column that will be created, and the `sep` argument specifies the separator that will be used to combine the values from the original columns.
 
-```{r unite() table5}
+```{r echo=FALSE}
 table5
+```
+
+```{r unite table5}
+#| code-fold: true
 
 table5 |> 
   unite(new, century, year, sep = "")   # no separator - default is "_"
@@ -308,15 +365,18 @@ table5 |>
 
 ## `stringr` package
 
-The `stringr` package contains functions for working with strings, all of which begin with "str_".
+The `stringr` package library contains functions for working with strings, all of which begin with "str_".
 
-```{r messy data frame}
+```{r echo=FALSE}
 # Very messy data frame of field sites
 messy_sites <- tibble(
   site_id = c(" Nelly Bay", "nelly_bay", "NELLY BAY", " Geoffrey_Bay ", "geoffrey bay")
 )
-
 print(messy_sites)
+```
+
+```{r messy data frame}
+#| code-fold: true
 
 # Using stringr within mutate to standardize the text
 clean_sites <- messy_sites |>
@@ -372,6 +432,8 @@ print(sensor_clean)
 Sometimes data is split across multiple tables. For example, you might have a massive table of daily fish catch records that only lists a `site_code`, and a separate, smaller metadata table that contains the exact GPS coordinates and zoning status for those site codes. In order to model the data, the tables need to be joined together based on a **key**, or a common column that exists in both tables.
 
 ```{r}
+#| code-fold: true
+
 # Table 1: Biological observation data
 observations <- tibble(
   site_code = c("NB", "GB", "MI", "NB", "HB"),
@@ -391,33 +453,39 @@ site_metadata <- tibble(
 print(site_metadata)
 ```
 
-### The workhorses: `left_join()` and `right_join()`
+## The workhorses: `left_join()` and `right_join()`
 
 These two functions work the same way but in opposite directions. `left_join()` keeps all rows from the left table and only matching rows from the right table, while `right_join()` keeps all rows from the right table and only matching rows from the left table.
 
 ```{r left_join}
+#| code-fold: true
+
 joined_data <- observations |> 
   left_join(site_metadata, by = join_by(site_code))
 
 print(joined_data)
 ```
 
-### The strict filter: `inner_join()`
+## The strict filter: `inner_join()`
 
 Only rows that have complete matches in both tables are kept when using `inner_join()`. All other observations are dropped.
 
 ```{r inner_join}
+#| code-fold: true
+
 matched_data <- observations |>
   inner_join(site_metadata, by = join_by(site_code))
 
 print(matched_data)
 ```
 
-### The detective: `anti_join()`
+## The detective: `anti_join()`
 
 Rather than adding new columns, `anti_join()` filters the left table to *only* show rows that *do not* have a match in the right table. If you try a `left_join()` and end up with unexpected NA values, you can perform an `anti_join()` to find out exactly which site codes are misspelled or missing from your metadata table.
 
 ```{r anti_join}
+#| code-fold: true
+
 # Which observations are missing from our metadata dictionary?
 missing_context <- observations |>
   anti_join(site_metadata, by = join_by(site_code))
@@ -426,6 +494,8 @@ print(missing_context)
 ```
 
 # Handling missing values
+
+Datasets may contain character or numeric values in place of `NA` values. This can become a problem when calculating summary statistics, so it is good practice to convert such values to true `NA` values.
 
 ```{r}
 # Raw data from an old temperature logger
