@@ -1,0 +1,121 @@
+---
+title: "R4MS - Workshop 3"
+author: "Katie Dyck"
+date: "2026-06-14"
+format:
+  html:
+    embed-resources: true
+    code-fold: show
+    code-copy: hover
+    code-block-bg: true
+    code-block-border-left: "grey25"
+    code-overflow: wrap
+    toc: true
+    number-sections: true
+    number-depth: 4
+    toc-location: left
+    toc-expand: 3
+    toc-title: Contents
+    syntax-highlighting: github
+    theme: cosmo
+    title-block-banner: true
+    fig-height: 6
+    fig-width: 10
+    fig-cap-location: bottom
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  include = TRUE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+# Housekeeping
+
+Purge the global environment with the command `rm(list = ls())`.
+
+```{r Housekeeping}
+#| message: true
+#| warning: false
+rm(list = ls())
+```
+
+```{r Connect to GitHub, include=FALSE}
+# in the console:
+#   credentials::git_credential_ask()
+#   usethis::git_sitrep()
+
+# if error message comes up that default branch is origin when it should be "main", enter this in the console:
+#   usethis::git_default_branch_rediscover()
+
+# in the console:
+#   usethis::use_git()
+#   usethis::use_github()
+
+# in RStudio terminal:
+  # git remote add origin https://github.com/katiedyck/MB5370_Module02.git
+  # git push -u origin main
+  # git push
+```
+
+```{r load packages}
+library(tidyverse)
+library(here)
+```
+
+# Exercise 1: Plot Deconstruction
+
+## Find the data
+
+Figure 9, https://www.sciencedirect.com/science/article/pii/S0025326X07000574#aep-section-id24
+
+**https://reefresilience.org/coral-reef-fisheries-module/coral-reef-fisheries/overfishing/**
+
+## Plot reconstruction
+
+```{r download plot data}
+fish <- read_csv(here::here("data/workshop3/global_fish_stocks.csv"))
+print(fish)
+```
+
+```{r rename columns}
+fish <- fish |> 
+    rename(date = "x", percent = "y")
+print(fish)
+```
+
+```{r add column for exploitation}
+fish <- fish |>
+  mutate(
+    exploit_type = case_when(
+        row_number() %in% 1:17 ~ "fully_exp",
+        row_number() %in% 18:34 ~ "partial_exp",
+        row_number() %in% 35:51 ~ "under_exp",
+        TRUE ~ NA_character_ # Assign NA to rows outside the specified ranges
+    )
+  )
+
+print(fish)
+```
+
+```{r remove month-day-time}
+# remove month, day, time
+fish <- fish |> 
+  mutate(year = year(date), .after = date) |> 
+  select(-date)
+
+print(fish)
+```
+
+```{r}
+ggplot(fish, aes(x = year, y = percent, colour = exploit_type, shape = exploit_type)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_y_continuous(limits = c(0,70)) +
+  scale_x_continuous(breaks = seq(1974, 2009, by = 5)) +
+  labs(x = "Year", y = "Percentage",
+       title = "Global Trends in Marine Fish Stock Status: 1974-2009")
+```
+
