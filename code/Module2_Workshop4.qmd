@@ -1,0 +1,287 @@
+---
+title: "R4MS - Workshop 4"
+author: "Katie Dyck"
+date: "2026-06-15"
+format:
+  html:
+    embed-resources: true
+    code-fold: show
+    code-copy: hover
+    code-block-bg: true
+    code-block-border-left: "grey25"
+    code-overflow: wrap
+    toc: true
+    number-sections: true
+    number-depth: 4
+    toc-location: left
+    toc-expand: 3
+    toc-title: Contents
+    syntax-highlighting: github
+    theme: cosmo
+    title-block-banner: true
+    fig-height: 6
+    fig-width: 10
+    fig-cap-location: bottom
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  include = TRUE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+# Housekeeping
+
+Purge the global environment with the command `rm(list = ls())`.
+
+```{r Housekeeping}
+#| message: true
+#| warning: false
+rm(list = ls())
+```
+
+```{r Connect to GitHub, include=FALSE}
+# in the console:
+#   credentials::git_credential_ask()
+#   usethis::git_sitrep()
+
+# if error message comes up that default branch is origin when it should be "main", enter this in the console:
+#   usethis::git_default_branch_rediscover()
+
+# in the console:
+#   usethis::use_git()
+#   usethis::use_github()
+
+# in RStudio terminal:
+  # git remote add origin https://github.com/katiedyck/MB5370_Module02.git
+  # git push -u origin main
+  # git push
+```
+
+# Load packages
+
+```{r load packages}
+library(tidyverse)
+library(cols4all)
+library(here)
+library(sf)   # simple features
+library(terra)    # for raster
+library(leaflet)
+library(tmap)   # thematic maps are geographical maps in which spatial data distributions are visualized
+```
+
+# Intro to the problem
+
+Our task is to wrangle a dataset to create a map of copepods in relation to temperature.
+
+# Download spatial data
+
+The spreadsheet `copepods-raw.csv` has measurements of copepod species richness from around Australia. Copepods are a type of zooplankton, perhaps the most abundant complex animals on the planet and an important part of ocean food-webs. 
+
+Like many distracted academics, she has also sent you some other data, but has not explained what it is all for yet. You’ll have to figure that out.
+
+Copepod species were counted using samples taken from a Continuous Plankton Recorder. The CPR was towed behind ‘ships of opportunity’ (including commercial and research vessels). ‘Silks’ run continuously through the CPR and the plankton are trapped onto the silks, kind of like a printer that runs all day and night to record plankton in the ocean.
+
+
+```{r load copepod data}
+dat <- read_csv(here::here("data/workshop4/data-for-course/copepods_raw.csv"))
+print(dat)
+```
+
+For processing, the silks are divided into segments (`segment_no`).
+
+```{r check CRF}
+st_crs(dat)
+```
+
+# Data Exploration
+
+## Check coordinates
+
+```{r}
+ggplot(dat) + 
+  aes(x = longitude, y = latitude, color = richness_raw) +
+  geom_point()
+```
+
+## Check for other patterns
+
+Visualize richness in a non-spatial way (latitude on x-axis, richness on y-axis)
+
+```{r}
+ggplot(dat, aes(x = latitude, y = richness_raw)) + 
+  stat_smooth() + 
+  geom_point()
+```
+
+At latitude -44, there is an unnatural change in the data pattern. We don't know what is causing this yet.
+
+# Getting started with maps
+
+Repeat the latitude vs. richness map, but with R's specialist packages for GIS and mapping.
+
+* reference data to real locations on the planet, and bend it around a mostly spherical ball (i.e. earth)
+
+First, using the `sf` package, we will turn the point data into a spatially referenced data frame. Similar to a shapefile for feature collection in GIS.
+
+```{r}
+# turn data into a simple features collection
+sdat <- st_as_sf(dat, coords = c("longitude", "latitude"), crs = 4326)
+```
+
+# Coordinate Reference System
+
+Coordinate reference systems are required for 2D mapping to compensate for the 3D nature of the earth.
+
+In mapping, the reference point is referred to as "datum" and the lumpy earth model as "ellipsoid". Together they make up the geographic coordinate reference system, which tells us where the copepod data coordinates are located on earth.
+
+GCS coordinates are represented by angular units (latitude and longitude), often in decimal degrees. For our data we will choose a common GCS, **WGS84**, to define the CRS using the EPSG code 5126.
+
+```{r}
+crs5126 <- st_crs(5126)
+crs5126   # look at the whole CRS
+crs5126$Name  # look at the CRS name
+crs5126$wkt  # CRS in well-known text format
+```
+
+To accurately map our data, we need to decide how to 'project' 3 dimensions into 2. There are many ways this can be done depending on where we are in the world and what we're most interested in preserving (e.g. angles vs. distances vs. area). Projections are defined by a projected coordinate reference system (PCS); R spatial packages use the *PROJ* software to do this.
+
+* The R package `crsuggest` can be used to help find the most suitable project CRS for your data.
+
+# Feature collection (points)
+
+```{r}
+sdat
+```
+
+Note the geometry column, which is where the coordinates are stored. 
+
+In summary, a simple feature is like a shapefile in that it holds data in rows and columns but is spatially aware.
+
+# Cartography
+
+```{r}
+plot(sdat["richness_raw"])
+```
+
+```{r}
+plot(sdat)
+```
+
+# Thematic maps
+
+```{r tmap plots}
+# plotting using 'tmap'
+
+tm_shape(sdat) +
+  tm_dots(col = "richness_raw", palette = "viridis")
+
+tm_shape(sdat) +
+  tm_dots(col = "richness_raw", palette = "magma")
+
+tm_shape(sdat) +
+  tm_dots(col = "richness_raw", palette = "plasma")
+
+tm_shape(sdat) +
+  tm_dots(col = "richness_raw", palette = "inferno")
+
+tm_shape(sdat) +
+  tm_dots(col = "richness_raw", palette = "cividis")
+
+tm_shape(sdat) +
+  tm_dots(col = "richness_raw", palette = "Greens")
+
+tm_shape(sdat) +
+  tm_dots(col = "richness_raw", palette = "Alphabet")
+
+tm1 <- tm_shape(sdat) +
+  tm_dots(col = "richness_raw", palette = "tol.wh_or_br")
+tm1
+```
+
+```{r explore palette options}
+# c4a_palettes()
+```
+
+```{r save to wd}
+tmap_save(tm1, filename = here::here("output/richness-map.png"),
+          width = 1800, height = 1600)
+```
+
+# Mapping spatial polygons as layers
+
+The `sf` package can also handle shapes (like polygons) for spatial data. Let's practice by loading a map of Australia & a map of Australia's continental shelf using `tmap`.
+
+## Loading shapefiles
+
+Shapefiles can be read directly into R with the st_read command (like read_csv, but for spatial files):
+
+```{r}
+aus <- st_read(here("data/workshop4/data-for-course/spatial-data/Aussie/Aussie.shp"))
+```
+
+```{r}
+aus
+```
+
+```{r}
+shelf <- st_read(here("data/workshop4/data-for-course/spatial-data/aus_shelf/aus_shelf.shp"))
+```
+
+```{r}
+shelf
+```
+
+## Mapping the polygons
+
+```{r}
+tm_shape(shelf) +
+  tm_polygons()
+
+tm_shape(aus) +
+  tm_polygons()
+```
+
+```{r check CRS of layers}
+st_crs(aus)
+st_crs(shelf)
+st_crs(sdat)
+```
+
+```{r}
+tm_shape(shelf, bbox = sdat) + 
+  tm_polygons() +
+  tm_shape(aus) + 
+  tm_polygons() + 
+  tm_shape(sdat) + 
+  tm_dots()
+```
+
+```{r}
+tmap_style("beaver")
+
+tm_shape(shelf, bbox = sdat) + 
+  tm_polygons() +
+  tm_shape(aus) + 
+  tm_polygons() + 
+  tm_shape(sdat) + 
+  tm_dots()
+```
+
+```{r}
+tmap_style("natural")
+
+tm_shape(shelf, bbox = sdat) + 
+  tm_polygons() +
+  tm_shape(aus) + 
+  tm_polygons() + 
+  tm_shape(sdat) + 
+  tm_dots()
+```
+
+```{r}
+
+```
+
