@@ -4,6 +4,7 @@ author: "Katie Dyck"
 date: "2026-06-03"
 format:
   html:
+      df-print: paged
       embed-resources: true
       code-fold: show
       code-copy: hover
