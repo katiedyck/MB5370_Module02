@@ -4,6 +4,7 @@ author: "Katie Dyck"
 date: "2026-06-14"
 format:
   html:
+    df-print: paged
     embed-resources: true
     code-fold: show
     code-copy: hover
@@ -32,11 +33,15 @@ knitr::opts_chunk$set(
   warning = FALSE)
 ```
 
+# Introduction
+
+For this workshop, I will be deconstructing a plot from the Coral Reef Fisheries module on the Reef Resilience Network website. The plot shows global trends in marine fish stock status from 1974 to 2009, with data points representing the percentage of fish stocks that are fully exploited, partially exploited, or underexploited. I will obtain raw data from this plot as accurately as possible, and then reconstruct the plot using R coding techniques taught in earlier workshops.
+
 # Housekeeping
 
 Purge the global environment with the command `rm(list = ls())`.
 
-```{r Housekeeping}
+```{r Housekeeping, include=FALSE}
 #| message: true
 #| warning: false
 rm(list = ls())
@@ -60,33 +65,43 @@ rm(list = ls())
   # git push
 ```
 
-```{r load packages}
+# Load packages
+
+Package libraries needed for this module are `tidyverse` and `here`. 
+
+```{r load packages, include=FALSE}
 library(tidyverse)
 library(here)
 ```
 
 # Exercise 1: Plot Deconstruction
 
-## Find the data
+## Find the raw data
 
-Figure 9, https://www.sciencedirect.com/science/article/pii/S0025326X07000574#aep-section-id24
+I chose to use the first graph from this webpage: [https://reefresilience.org/coral-reef-fisheries-module/coral-reef-fisheries/overfishing/](https://reefresilience.org/coral-reef-fisheries-module/coral-reef-fisheries/overfishing/).
 
-**https://reefresilience.org/coral-reef-fisheries-module/coral-reef-fisheries/overfishing/**
+## Wrangle the data
 
-## Plot reconstruction
-
-```{r download plot data}
+```{r download plot data, include=FALSE}
 fish <- read_csv(here::here("data/workshop3/global_fish_stocks.csv"))
 print(fish)
 ```
 
+I want to first rename the columns so I know what variables I am working with.
+
 ```{r rename columns}
+#| code-fold: true
+
 fish <- fish |> 
     rename(date = "x", percent = "y")
 print(fish)
 ```
 
+Next I will categorize each row of data into one of three categories: fully exploited, partially exploited, or underexploited. I will do this by creating a new column called `exploit_type` and using the `case_when()` function to assign the appropriate category based on the row number.
+
 ```{r add column for exploitation}
+#| code-fold: true
+
 fish <- fish |>
   mutate(
     exploit_type = case_when(
@@ -100,8 +115,11 @@ fish <- fish |>
 print(fish)
 ```
 
+In the `date` column I am only concerned about the year, so I will remove the month, day, and time information and create a new column called `year`. I will then remove the `date` column from the data frame.
+
 ```{r remove month-day-time}
-# remove month, day, time
+#| code-fold: true
+
 fish <- fish |> 
   mutate(year = year(date), .after = date) |> 
   select(-date)
@@ -109,7 +127,13 @@ fish <- fish |>
 print(fish)
 ```
 
-```{r}
+## Completed plot 
+
+Here is my final version of the plot, which is a recreation of the original plot from the Reef Resilience Network website. I used the `ggplot2` package to create the plot, and I added points for each data point, a linear regression line for each exploitation type, and customized the axes and labels.
+
+```{r final plot}
+#| code-fold: true
+
 ggplot(fish, aes(x = year, y = percent, colour = exploit_type, shape = exploit_type)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
