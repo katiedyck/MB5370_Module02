@@ -1,36 +1,37 @@
 ---
-title: "R4MS - Workshop 1"
+title: "Module 2: R4MS - Workshop 1"
 author: "Katie Dyck"
 date: "2026-06-03"
 format:
   html:
-      df-print: paged
-      embed-resources: true
-      code-fold: show
-      code-copy: hover
-      code-block-bg: true
-      code-block-border-left: "grey25"
-      code-overflow: wrap
-      toc: true
-      number-sections: true
-      number-depth: 4
-      toc-location: left
-      toc-expand: 3
-      toc-title: Contents
-      syntax-highlighting: github
-      theme: cosmo
-      title-block-banner: true
-      fig-height: 6
-      fig-width: 10
-      fig-cap-location: bottom
+    df-scroll: true
+    df-print: paged
+    embed-resources: true
+    code-fold: show
+    code-copy: hover
+    code-block-bg: true
+    code-block-border-left: "grey25"
+    code-overflow: scroll
+    toc: true
+    number-sections: true
+    number-depth: 4
+    toc-location: left
+    toc-expand: 3
+    toc-title: Contents
+    syntax-highlighting: github
+    theme: cosmo
+    title-block-banner: true
+    fig-height: 6
+    fig-width: 10
+    fig-cap-location: bottom
 ---
 
 # Introduction
 
-This qmd file includes all material covered from the first "R for Marine Science" workshop. The material covered includes:
+This document includes all material covered from the first "R for Marine Science" workshop:
 
 - Importing different file types (`.csv`, `.txt`, `.xlsx`)
-- Foundational grammar for  slicing, filtering, sorting, and transforming data
+- Foundational grammar for slicing, filtering, sorting, and transforming data
 - Aggregating and summarizing data
 - Visualizing the `penguins` dataset from the `palmerpenguins` package
 - How to save and export datasets and plots
@@ -61,7 +62,11 @@ knitr::opts_chunk$set(
   # git push
 ```
 
-Data files (.csv, .txt, .xlsx) were copied from class repository "R4MarineScience" and added to the data folder in my repository for Module 2.
+Data files (.csv, .txt, .xlsx) were copied from the class repository "R4MarineScience" and saved in the [`data`](https://github.com/katiedyck/MB5370_Module02/tree/main/data) folder in my repository for this module.
+-   `reef_cover_log.csv` contains information on underwater transects conducted at Nelly Bay, Geoffrey Bay, and Florence Bay on Magnetic Island, Queensland
+-   `acoustic_telemetry_stream.txt` contains acoustic tracking data for sea turtles tagged in May 2026
+-   `fish_catch_data.xlsx` contains information on fish species caught on the Great Barrier Reef
+-   `mangrove_survey_raw.csv` contains information on mangroves on Hinchinbrook Island, Queensland
 
 # Housekeeping
 
@@ -79,6 +84,7 @@ rm(list = ls())
 # Confirm that global session memory is now vacant
 objects()
 ```
+
 # Packages
 
 The `tidyverse`, `readxl`, and `palmerpenguins` package libraries are needed for this workshop.
@@ -96,46 +102,47 @@ library(palmerpenguins)
 * .xlsx files can be imported with `read_excel()`.
 
 ```{r Import data, echo=TRUE}
-#| code-fold: true
+#| code-fold: false
 
 # Practice import A
 benthic_cover <- read_csv(here::here("data/workshop1/reef_cover_log.csv"))
-print(benthic_cover)
+benthic_cover
 
 # Practice import B
 acoustic_stream <- read_tsv(here::here("data/workshop1/acoustic_telemetry_stream.txt"))
-print(acoustic_stream)
+acoustic_stream
 
 # Practice import C
 fisheries_annual <- read_excel(here::here("data/workshop1/fish_catch_data.xlsx"), sheet = "Commercial_2026")
-print(fisheries_annual)
+fisheries_annual
 
 # Read in mangrove data
 mangrove_data <- read_csv(here::here("data/workshop1/mangrove_survey_raw.csv"))
-print(mangrove_data)
+mangrove_data
 ```
+
 For the mangrove data, we need to include additional arguments so that the first 5 lines of the dataset are ignored. These lines are just comments that are not part of the data.
 
 ```{r mangrove data, echo=TRUE}
-#| code-fold: true
+#| code-fold: false
 
 # Use args in read_csv() to read mangrove_data properly
 mangrove_data <- read_csv(here::here("data/workshop1/mangrove_survey_raw.csv"),
                           skip = 5,       # skip the first 5 lines of field notes
                           na = c(".", "NA", "9999", "ND", "blank"))      # convert known text alternatives to true NA
-print(mangrove_data)
+mangrove_data
 ```
 
 All 4 data sets are tibbles.
 You can turn tibbles, which are `tidyverse` data objects, into a data frame:
 
 ```{r Covert tibble to data frame, echo=TRUE}
-#| code-fold: true
+#| code-fold: false
 
 benthic_cover_df <- as.data.frame(benthic_cover)
 
-print(benthic_cover)
-print(benthic_cover_df)
+benthic_cover
+benthic_cover_df
 ```
 
 Notice the difference between these two data sets. `benthic_cover` tells you its dimensions and variable types (character, double, etc.) below the column headers. 
@@ -162,9 +169,11 @@ summary(penguins)
 
 ## `select()`
 
-This verb allows you to vertically slice datasets, isolating columns by variable names.
+This verb allows you to vertically slice datasets, isolating specific columns by variable names.
 
 ```{r select(), echo=TRUE}
+#| code-fold: false
+
 # Vertically slice specific variables by name
 morphology_metrics <- select(penguins, species, bill_length_mm, bill_depth_mm, body_mass_g)
 glimpse(morphology_metrics)
@@ -180,9 +189,11 @@ glimpse(clean_scientific_fields)
 
 ## `filter()`
 
-This verb isolates records (rows) horizontally based on conditional parameters. R evaluates each row against a logical expression, keeping entries that are `TRUE` and dropping those that are `FALSE` or `NA` (i.e. those that do not meet the conditions of the expression).
+This verb isolates records (rows) horizontally based on conditional parameters. R evaluates each row against a logical expression, keeping entries that are true and dropping those that are false or NA (i.e. those that do not meet the conditions of the expression).
 
 ```{r filter(), echo=TRUE}
+#| code-fold: false
+
 # Isolate observations belonging to a single categorical target group
 adelie_cohort <- filter(penguins, species == "Adelie")
 glimpse(adelie_cohort)
@@ -208,6 +219,8 @@ glimpse(sub_islands)
 This verb alters how the rows of data are sorted within your data frame, without changing individual cell values
 
 ```{r arrange(), echo=TRUE}
+#| code-fold: false
+
 # Sort penguins by ascending body mass (Default setting: smallest mass first)
 lightest_first <- arrange(penguins, body_mass_g)
 glimpse(lightest_first)
@@ -229,6 +242,8 @@ The native R pipe syntax is `|>`, but there is another version built into the ti
 
 Instead of writing:
 ```{r no pipe operator, echo=TRUE}
+#| code-fold: false
+
 penguins_subset <- mutate(penguins, bill_ratio = bill_length_mm / bill_depth_mm)
 penguins_final <- filter(penguins_subset, species == "Adelie")
 ```
@@ -236,6 +251,8 @@ penguins_final <- filter(penguins_subset, species == "Adelie")
 You can just write:
 
 ```{r with pipe operator, echo=TRUE}
+#| code-fold: false
+
 penguins_final <- penguins |> 
     mutate(bill_ratio = bill_length_mm / bill_depth_mm) |> 
     filter(species == "Adelie")
@@ -246,6 +263,8 @@ penguins_final <- penguins |>
 This verb is used to calculate new variables based on ones that already exist in your data.
 
 ```{r mutate(), echo=TRUE}
+#| code-fold: false
+
 penguin_ratios <- penguins |> 
     mutate(body_mass_kg = body_mass_g / 1000,
            bill_ratio = bill_length_mm / bill_depth_mm)
@@ -257,7 +276,7 @@ glimpse(penguin_ratios)
 # Data aggregation & ecological summarization
 
 ```{r group_by(), summarise(), echo=TRUE}
-#| code-fold: true
+#| code-fold: false
 
 # Grouping our active memory penguins by species
 grouped_penguins <- group_by(penguins, species)
@@ -274,7 +293,7 @@ print(species_mass_summary)
 Adelie and Gentoo species data includes NA values - this is an R design feature called the **Missing Value Trap**. Any mathematical function of any kind (sum, mean, sd, etc.) will automatically return NA to prevent miscalculations. This can be overridden by explicitly declaring that missing cells should be dropped during calculations.
 
 ```{r missing trap value, echo=TRUE}
-#| code-fold: true
+#| code-fold: false
 
 biological_signal <- penguins |> 
     group_by(species, sex) |> 
@@ -312,8 +331,6 @@ ggplot(penguin_mass_by_island, aes(x = species, y = mean_mass_g)) +
 You can also pipe directly to visualization without creating an intermediate summary table:
 
 ```{r piping directly to visualization, echo=TRUE}
-#| code-fold: true
-
 mass_compare_plot <- penguins |> 
     filter(!is.na(body_mass_g)) |>    # remove any NA values from body_mass_g
     group_by(species, island) |> 
