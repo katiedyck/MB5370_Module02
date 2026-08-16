@@ -10,7 +10,7 @@ format:
       code-copy: hover
       code-block-bg: true
       code-block-border-left: "grey25"
-      code-overflow: wrap
+      code-overflow: scroll
       toc: true
       number-sections: true
       number-depth: 4
@@ -27,8 +27,7 @@ format:
 
 # Introduction
 
-This qmd file includes all material covered from the second "R for Marine Science" workshop. The material covered includes:
-
+This document includes all material covered from the second "R for Marine Science" workshop:
 - Tidying data
 - Pivoting wider and longer
 - Separating and uniting variables
@@ -85,34 +84,34 @@ library(palmerpenguins)
 
 # Tidying data
 
-This is what a tidy data table looks like:
+This is what a **tidy** data table looks like:
 
 ```{r tidy table example}
-#| code-fold: true
+#| code-fold: false
 
 table1 <- table1
-print(table1)
+table1
 ```
 
-This is what an *untidy* data table looks like:
+Below are two examples of what an **untidy** data table looks like:
 
 ```{r untidy table examples}
-#| code-fold: true
+#| code-fold: false
 
 table2 <- table2
-print(table2)
+table2
 
 table3 <- table3
-print(table3)
+table3
 ```
 
 A tidy dataset follows these 3 interrelated rules:
 
-- Each variable has its own column
-- Each observation has its own row
-- Each value has its own cell
+1. Each variable has its own column
+2. Each observation has its own row
+3. Each value has its own cell
 
-The rules are interrelated because only 2 of the 3 rules can be followed at any time.
+The rules are interrelated because only 2 out of the 3 can be followed at any time.
 
 *All `tidyverse` packages have been designed to work with tidy data.*
 
@@ -120,34 +119,38 @@ The rules are interrelated because only 2 of the 3 rules can be followed at any 
 
 `pivot_longer()` and `pivot_wider()` are used to reshape data tables. Both functions are made available from the `tidyr` package, which is part of the `tidyverse` library.
 
-```{r pivot_longer()}
+```{r pivot_longer}
+#| code-fold: false
+
 table1 |> 
   pivot_longer(cols = c("cases", "population"),
                names_to = "case_type",
                values_to = "case_count")
 ```
+
 ```{r pivot_wider}
+#| code-fold: false
+
 table2 |> 
   pivot_wider(names_from = "type", values_from = "count")
 ```
 
-
 ## Lengthening datasets
 
-`pivot_longer()` is used to lengthen datasets. It takes multiple columns and collapses them into key-value pairs, *increasing* the number of rows and *decreasing* the number of columns. The dataset is split by the `names_to` argument, which specifies the name of the new column that will contain the names of the original columns. The `values_to` argument specifies the name of the new column that will contain the values from the original columns.
+`pivot_longer()` is used to lengthen datasets. It takes multiple columns and collapses them into key-value pairs, **increasing the number of rows** and **decreasing the number of columns**. The dataset is split by the `names_to` argument, which specifies the name of the new column that will contain the *names* of the original columns. The `values_to` argument specifies the name of the new column that will contain the *values* from the original columns.
 
 ```{r billboard, echo=FALSE}
 billboard <- billboard
 billboard
 ```
 
-In the `billboard` dataset, each observation is a song, and the first 3 columns (`artist`, `track`, and `date.entered`) are variables that describe the song. The remaining columns (`wk1` to `wk76`) are not variables, but rather values *of* a variable (week). To tidy this dataset so that each row is a single observation, we can use `pivot_longer()` to collapse the `wk1` to `wk76` columns into key-value pairs.
+In the `billboard` dataset above, each observation is a song, and the first 3 columns (`artist`, `track`, and `date.entered`) are variables that describe the song. The remaining columns (`wk1` to `wk76`) are not variables, but rather values *of* a variable (week). To tidy this dataset so that each row is a single observation, we can use `pivot_longer()` to collapse the `wk1` to `wk76` columns into key-value pairs.
 
 ```{r billboard pivot_longer}
-#| code-fold: true
+#| code-fold: false
 
 billboard |> 
-  pivot_longer(cols = starts_with("wk"),
+  pivot_longer(cols = starts_with("wk"),  # so the first 3 columns are not pivoted
                names_to = "week",
                values_to = "rank")
 ```
@@ -155,7 +158,7 @@ billboard |>
 As some songs are only on the billboard for a few weeks, there are many `NA` values in the `rank` column. We can use the `values_drop_na` argument in `pivot_longer()` to drop these rows from the output.
 
 ```{r billboard pivot_longer drop_na}
-#| code-fold: true
+#| code-fold: false
 
 billboard |> 
   pivot_longer(cols = starts_with("wk"),
@@ -167,7 +170,7 @@ billboard |>
 We can also convert some of the values in the `week` column from character to numeric using the `names_prefix()` argument. This argument allows us to specify a string that will be removed from the values in the `week` column before they are converted to numeric.
 
 ```{r mutate billboard}
-#| code-fold: true
+#| code-fold: false
 
 billboard |> 
   pivot_longer(cols = starts_with("wk"),
@@ -181,19 +184,19 @@ billboard |>
 
 ## Widening datasets
 
-`pivot_wider()` is used to widen datasets. It allows us to handle a single observation that is spread across *multiple rows*. It takes key-value pairs and spreads them across multiple columns, *decreasing* the number of rows and *increasing* the number of columns. 
+`pivot_wider()` is used to widen datasets. It allows us to handle a single observation that is spread across *multiple rows*. It takes key-value pairs and spreads them across multiple columns, **decreasing the number of rows** and **increasing the number of columns**. 
 
-The dataset is split by the `names_from` argument, which specifies the name of the column that contains the names of the new columns. The `values_from` argument specifies the name of the column that contains the values that will be spread across the new columns.
+The dataset is split by the `names_from` argument, which specifies the name of the column that contains the *names* of the new columns. The `values_from` argument specifies the name of the column that contains the *values* that will be spread across the new columns.
 
 ```{r cms_patient_experience, echo=FALSE}
 cms_patient_experience <- cms_patient_experience
 cms_patient_experience
 ```
 
-The unit being studied in the `cms_patient_experience` dataset is an organization. In the current format, though, each organization is spread across 6 rows with 1 row for each of the 6 measurements taken during the survey.
+The unit being studied in the `cms_patient_experience` dataset above (from the `tidyr` package) is an organization. In the current format, though, each organization (currently in the `org_nm` column) is spread over 6 rows with 1 row for each of the 6 measurements taken during the survey.
 
 ```{r}
-#| code-fold: true
+#| code-fold: false
 
 cms_patient_experience |> 
   distinct(measure_cd, measure_title)
@@ -202,7 +205,7 @@ cms_patient_experience |>
 To tidy this dataset so that each row is a single observation, we use `pivot_wider()` to spread the values in the `measure` column across multiple columns.
 
 ```{r cms_patient_experience pivot_wider}
-#| code-fold: true
+#| code-fold: false
 
 cms_patient_experience |> 
   pivot_wider(id_cols = starts_with("org"),   # tells pivot_wider which columns have values that are unique to each row
@@ -231,7 +234,7 @@ penguins_long <- penguins |>
 penguins_long
 ```
 
-Using the transformed data table, `penguins_long`, we can plot the distribution of all morphometric measurements.
+Using the transformed data table above, we can plot the distribution of all morphometric measurements.
 
 ```{r penguins plot with pivot_longer}
 #| code-fold: true
@@ -268,7 +271,7 @@ penguins_long |>
   scale_fill_discrete(name = "Species")
 ```
 
-We can also widen the `penguins` data set to present summary statistics. This is known as a **cross-tabulated matrix**. 
+We can also widen the original `penguins` data set to present summary statistics. This is known as a **cross-tabulated matrix**. 
 
 ```{r mass_summary penguins}
 #| code-fold: true
@@ -291,9 +294,9 @@ mass_matrix <- mass_summary |>
               values_from = mean_mass)   # which columns provides values to fill new columns
 
 mass_matrix
-# NA values mean no penguins of that species were found on that island
 ```
 
+(NA values indicate that no penguins were found on the island.)
 
 # Separating and uniting data tables
 
@@ -303,10 +306,10 @@ table3
 
 ## `separate()`
 
-The `rate` column needs to be split into a `cases` and `population` column. The `separate()` function from the `tidyr` package can be used to split a single column into multiple columns based on a separator. 
+In the table above, the `rate` column needs to be split into a `cases` and `population` column. The `separate()` function from the `tidyr` package can be used to split a single column into multiple columns. 
 
 ```{r separate table3}
-#| code-fold: true
+#| code-fold: false
 
 table3 |> 
   separate(rate, into = c("cases", "population"))
@@ -316,7 +319,7 @@ table3 |>
 
 ```{r}
 #| output: false
-#| code-fold: true
+#| code-fold: false
 
 table3 |> 
   separate(rate, into = c("cases", "population"), sep = "/")
@@ -325,13 +328,19 @@ table3 |>
 
 The `cases` and `population` columns need to be converted to numeric types. They are currently character types because this is the default when using `separate()`. There are 2 ways this can be done:
 
-```{r change column types table 3}
+```{r change column types table 3, eval=FALSE}
+#| code-fold: false
+
 table3 |> 
   separate(rate, into = c("cases", "population"), sep = "/") |> 
   mutate(cases = as.numeric(cases),
          population = as.numeric(population))
+```
 
-# OR
+OR 
+
+```{r}
+#| code-fold: false
 
 table3 |> 
   separate(rate, into = c("cases", "population"), sep = "/", convert = TRUE)
@@ -340,7 +349,7 @@ table3 |>
 When you pass an integer to the `sep` argument, `separate()` will split the column at that position. For example, if we wanted to split the `year` column into a `century` and `year` column, we could use `sep = 2` to split the column after the first 2 characters.
 
 ```{r separate by integers}
-#| code-fold: true
+#| code-fold: false
 
 table3 |> 
   separate(year, into = c("century", "year"), sep = 2)
@@ -355,10 +364,10 @@ table5
 ```
 
 ```{r unite table5}
-#| code-fold: true
+#| code-fold: false
 
 table5 |> 
-  unite(new, century, year, sep = "")   # no separator - default is "_"
+  unite(col = new, century, year, sep = "")   # no separator - default is "_"
 ```
 
 
@@ -366,7 +375,9 @@ table5 |>
 
 ## `stringr` package
 
-The `stringr` package library contains functions for working with strings, all of which begin with "str_".
+The `stringr` package library contains several functions for working with strings, all of which begin with "str_".
+
+Look how messy this data frame of field site names is:
 
 ```{r echo=FALSE}
 # Very messy data frame of field sites
@@ -376,10 +387,11 @@ messy_sites <- tibble(
 print(messy_sites)
 ```
 
-```{r messy data frame}
-#| code-fold: true
+We can use `stringr` within `mutate()` to standardize the text:
 
-# Using stringr within mutate to standardize the text
+```{r messy data frame}
+#| code-fold: false
+
 clean_sites <- messy_sites |>
   mutate(
     # 1. Convert everything to lowercase
@@ -396,7 +408,7 @@ clean_sites <- messy_sites |>
     site_clean = str_to_title(site_clean)
   )
 
-print(clean_sites)
+clean_sites
 ```
 
 ## `lubridate` package
@@ -404,6 +416,8 @@ print(clean_sites)
 The `lubridate` package allows you to parse dates by spelling out the order of the components (year, month, day, hour, minute, second) in the date format. The functions for parsing dates are `ymd()`, `mdy()`, `dmy()`, `ymd_hms()`, etc.
 
 ```{r dates}
+#| code-fold: false
+
 date_1 <- dmy("25/12/2026")
 date_2 <- ymd("2026-12-25")
 
@@ -412,19 +426,21 @@ date_1 == date_2
 ```
 
 ```{r dates 2}
+#| code-fold: false
+
 # A tibble of raw sensor data with a messy character timestamp
 sensor_data <- tibble(
   raw_time = c("14-05-2026 08:30:00", "14-05-2026 08:45:00", "14-05-2026 09:00:00"),
   temperature = c(24.5, 24.6, 24.4)
 )
+sensor_data
 
 # Converting character strings to true POSIXct datetime objects
 sensor_clean <- sensor_data |>
   mutate(
-    true_time = dmy_hms(raw_time)
+    true_time = dmy_hms(raw_time)   # create a new column called "raw_time"
   )
-
-print(sensor_clean)
+sensor_clean
 ```
 
 
@@ -433,7 +449,7 @@ print(sensor_clean)
 Sometimes data is split across multiple tables. For example, you might have a massive table of daily fish catch records that only lists a `site_code`, and a separate, smaller metadata table that contains the exact GPS coordinates and zoning status for those site codes. In order to model the data, the tables need to be joined together based on a **key**, or a common column that exists in both tables.
 
 ```{r}
-#| code-fold: true
+#| code-fold: false
 
 # Table 1: Biological observation data
 observations <- tibble(
@@ -441,8 +457,7 @@ observations <- tibble(
   species = c("Trout", "Snapper", "Trout", "Cod", "Trout"),
   count = c(5, 2, 1, 3, 8)
 )
-
-print(observations)
+observations
 
 # Table 2: Spatial metadata
 site_metadata <- tibble(
@@ -450,8 +465,7 @@ site_metadata <- tibble(
   zone = c("Marine National Park", "Conservation Park", "Habitat Protection", "General Use", "Other Use"),
   lat = c(-19.16, -19.15, -19.14, -19.12, -19.11)
 )
-
-print(site_metadata)
+site_metadata
 ```
 
 ## The workhorses: `left_join()` and `right_join()`
@@ -459,25 +473,32 @@ print(site_metadata)
 These two functions work the same way but in opposite directions. `left_join()` keeps all rows from the left table and only matching rows from the right table, while `right_join()` keeps all rows from the right table and only matching rows from the left table.
 
 ```{r left_join}
-#| code-fold: true
+#| code-fold: false
 
 joined_data <- observations |> 
   left_join(site_metadata, by = join_by(site_code))
 
-print(joined_data)
+joined_data
+```
+
+```{r}
+#| code-fold: false
+
+observations |> 
+  right_join(site_metadata, by = join_by(site_code))
 ```
 
 ## The strict filter: `inner_join()`
 
-Only rows that have complete matches in both tables are kept when using `inner_join()`. All other observations are dropped.
+Only rows that have complete matches in **both** tables are kept when using `inner_join()`. All other observations are dropped.
 
 ```{r inner_join}
-#| code-fold: true
+#| code-fold: false
 
 matched_data <- observations |>
   inner_join(site_metadata, by = join_by(site_code))
 
-print(matched_data)
+matched_data
 ```
 
 ## The detective: `anti_join()`
@@ -485,7 +506,7 @@ print(matched_data)
 Rather than adding new columns, `anti_join()` filters the left table to *only* show rows that *do not* have a match in the right table. If you try a `left_join()` and end up with unexpected NA values, you can perform an `anti_join()` to find out exactly which site codes are misspelled or missing from your metadata table.
 
 ```{r anti_join}
-#| code-fold: true
+#| code-fold: false
 
 # Which observations are missing from our metadata dictionary?
 missing_context <- observations |>
@@ -498,15 +519,21 @@ print(missing_context)
 
 Datasets may contain character or numeric values in place of `NA` values. This can become a problem when calculating summary statistics, so it is good practice to convert such values to true `NA` values.
 
-```{r}
+```{r echo=FALSE}
 # Raw data from an old temperature logger
 logger_data <- tibble(
   depth_m = c(10, 20, 30, 40),
   temp_c = c(24.5, 24.1, -999, 23.5)) # -999 is a known sensor error code
 
+logger_data
+```
+
+```{r}
+#| code-fold: false
+
 # Convert the -999 error codes to true NA values
 fixed_logger <- logger_data |>
   mutate(temp_c = na_if(temp_c, -999))
 
-print(fixed_logger)
+fixed_logger
 ```
