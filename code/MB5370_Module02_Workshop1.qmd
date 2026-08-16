@@ -104,20 +104,40 @@ library(palmerpenguins)
 ```{r Import data, echo=TRUE}
 #| code-fold: false
 
-# Practice import A
 benthic_cover <- read_csv(here::here("data/workshop1/reef_cover_log.csv"))
+```
+
+```{r}
 benthic_cover
+```
 
-# Practice import B
+```{r echo=TRUE}
+#| code-fold: false
+
 acoustic_stream <- read_tsv(here::here("data/workshop1/acoustic_telemetry_stream.txt"))
+```
+
+```{r}
 acoustic_stream
+```
 
-# Practice import C
+```{r echo=TRUE}
+#| code-fold: false
+
 fisheries_annual <- read_excel(here::here("data/workshop1/fish_catch_data.xlsx"), sheet = "Commercial_2026")
-fisheries_annual
+```
 
-# Read in mangrove data
+```{r}
+fisheries_annual
+```
+
+```{r echo=TRUE}
+#| code-fold: false
+
 mangrove_data <- read_csv(here::here("data/workshop1/mangrove_survey_raw.csv"))
+```
+
+```{r echo=FALSE}
 mangrove_data
 ```
 
@@ -152,7 +172,9 @@ Notice the difference between these two data sets. `benthic_cover` tells you its
 
 The `penguins` dataset from the `palmerpenguins` package library contains measurements of penguin species found near Palmer Station in Antarctica.
 
-```{r Load penguin data}
+```{r Load penguin data, echo=TRUE}
+#| code-fold: true
+
 # Load package data into active memory
 data("penguins")
 
@@ -176,15 +198,15 @@ This verb allows you to vertically slice datasets, isolating specific columns by
 
 # Vertically slice specific variables by name
 morphology_metrics <- select(penguins, species, bill_length_mm, bill_depth_mm, body_mass_g)
-glimpse(morphology_metrics)
+morphology_metrics
 
 # Retain a continuous block of attributes using colon operator
 spatial_block <- select(penguins, species:island)
-glimpse(spatial_block)
+spatial_block
 
 # Discard logistics tracking attributes while keeping everything else using minus sign
 clean_scientific_fields <- select(penguins, -year)
-glimpse(clean_scientific_fields)
+clean_scientific_fields
 ```
 
 ## `filter()`
@@ -196,21 +218,21 @@ This verb isolates records (rows) horizontally based on conditional parameters. 
 
 # Isolate observations belonging to a single categorical target group
 adelie_cohort <- filter(penguins, species == "Adelie")
-glimpse(adelie_cohort)
+adelie_cohort
 
 # Filter out individuals using continuous numerical boundary thresholds
 # Keeps only large penguins whose mass exceeds 4500 g
 heavy_penguins <- filter(penguins, body_mass_g > 4500)
-glimpse(heavy_penguins)
+heavy_penguins
 
 # Combine multiple conditional parameters across separate attributes
 # Keep records that match Gentoo penguins sampled explicitly on Biscoe Island
 biscoe_gentoo <- filter(penguins, species == "Gentoo" & island == "Biscoe")
-glimpse(biscoe_gentoo)
+biscoe_gentoo
 
 # Search for rows matching multiple targeting flags within an explicit set
 sub_islands <- filter(penguins, island %in% c("Dream", "Torgersen"))
-glimpse(sub_islands)
+sub_islands
 ```
 
 
@@ -223,15 +245,15 @@ This verb alters how the rows of data are sorted within your data frame, without
 
 # Sort penguins by ascending body mass (Default setting: smallest mass first)
 lightest_first <- arrange(penguins, body_mass_g)
-glimpse(lightest_first)
+lightest_first
 
 # Sort penguins in descending sequence using the desc() layout wrapper
 heaviest_first <- arrange(penguins, desc(body_mass_g))
-glimpse(heaviest_first)
+heaviest_first
 
 # Execute nested sorting criteria: group by species, then sort by descending bill length
 stratified_morphology <- arrange(penguins, species, desc(bill_length_mm))
-glimpse(stratified_morphology)
+stratified_morphology
 ```
 
 ## Pipe operator (`|>`)
@@ -256,6 +278,8 @@ You can just write:
 penguins_final <- penguins |> 
     mutate(bill_ratio = bill_length_mm / bill_depth_mm) |> 
     filter(species == "Adelie")
+
+penguins_final
 ```
 
 ## `mutate()`
@@ -269,7 +293,7 @@ penguin_ratios <- penguins |>
     mutate(body_mass_kg = body_mass_g / 1000,
            bill_ratio = bill_length_mm / bill_depth_mm)
 
-glimpse(penguin_ratios)
+penguin_ratios
 ```
 
 
@@ -282,12 +306,12 @@ glimpse(penguin_ratios)
 grouped_penguins <- group_by(penguins, species)
 
 # Note that table looks similar, but metadata notes 'Groups: species [3]'
-print(grouped_penguins)
+grouped_penguins
 
 # Collapsing groups into explicit summary metrics
 species_mass_summary <- summarise(grouped_penguins, 
                                   mean_mass_g = mean(body_mass_g))
-print(species_mass_summary)
+species_mass_summary
 ```
 
 Adelie and Gentoo species data includes NA values - this is an R design feature called the **Missing Value Trap**. Any mathematical function of any kind (sum, mean, sd, etc.) will automatically return NA to prevent miscalculations. This can be overridden by explicitly declaring that missing cells should be dropped during calculations.
@@ -303,7 +327,7 @@ biological_signal <- penguins |>
         sd_mass_g = sd(body_mass_g, na.rm = TRUE)       # standard deviation calculation
     )
 
-print(biological_signal)
+biological_signal
 ```
 
 
@@ -318,7 +342,7 @@ penguin_mass_by_island <- penguins |>
     group_by(species, island) |> 
     summarise(mean_mass_g = mean(body_mass_g, na.rm = TRUE))
 
-print(penguin_mass_by_island)
+penguin_mass_by_island
 
 # Visualize the data
 ggplot(penguin_mass_by_island, aes(x = species, y = mean_mass_g)) +
@@ -411,7 +435,7 @@ summary_SE <- penguins |>
         .groups = "drop"
     )
 
-print(summary_SE)
+summary_SE
 ```
 
 Looking at the summary table, we can see that the standard error decreases as sample size (n) increases (e.g. SE 73.5 for Adelie penguins on Biscoe island (n = 44) vs. SE 45.5 for Gentoo penguins on Biscoe island (n = 68)). This table also tell us that as n increases, so does the mean mass for each species on each island, which makes sense.
