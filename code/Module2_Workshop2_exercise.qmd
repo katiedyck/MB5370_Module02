@@ -100,20 +100,21 @@ catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 4)
 
 ## Inspect individual sheets
 
-```{r investigate catch data sheets}
-#| code-fold: true
-
-print(catch1)
-print(catch2)
-print(catch3)
-print(catch4)
+```{r investigate catch data sheets, echo=FALSE}
+catch1
+catch2
+catch3
+catch4
 ```
 There are variations in the species and site names, but they otherwise look to be the same. We can clean after binding all the rows together.
 
 ## Bind rows together
 
 ```{r bind catch data rows}
+#| code-fold: false
+
 catch_data <- bind_rows(catch1, catch2, catch3, catch4)
+
 # Clean up the environment
 rm(catch1, catch2, catch3, catch4)
 ```
@@ -121,7 +122,7 @@ rm(catch1, catch2, catch3, catch4)
 ## Examine catch data
 
 ```{r Examine catch data, echo=FALSE}
-print(catch_data)
+catch_data
 ```
 
 We want to know how many levels of `site` and `species` we have, which we can't tell from this output. One option is to check these columns explicitly using `distinct()`.
@@ -139,20 +140,19 @@ catch_data |>
 ### Next steps for catch data
 
 We need the site names to have a uniform format. It looks like sites correspond to unique zones on the Ross River, but we need to load the metadata to confirm this.
-We can use the `stringr` package to make site names consistent so we can then load the taxonomic dictionary file to translate common to scientific species names.
+
+We can use the `stringr` package to make site names consistent so we can then load the taxonomic dictionary file to translate common species names into scientific species names.
 
 ## Load metadata
 
 ```{r load remaining datasets, echo=FALSE}
 metadata <- read_csv("../data/workshop2/estuary_metadata.csv")
-print(metadata)
+metadata
 ```
 
 ## Clean metadata
 
-```{r check data tables}
-#| code-fold: true
-
+```{r check data tables, echo=FALSE}
 metadata |> 
   distinct(site_name)
 ```
@@ -161,10 +161,10 @@ Site names in `metadata` are all over the place. We need to standardize them so 
 
 ### Standardize site names in catch data and metadata
 
-*Aside from simply standardizing the site names, we also want to convert the character variables to factors.*
+Aside from simply standardizing the site names, we also want to convert the character variables to factors.
 
 ```{r clean catch_data site names}
-#| code-fold: true
+#| code-fold: false
 
 catch_data <- catch_data |> 
   mutate(
@@ -178,7 +178,7 @@ catch_data <- catch_data |>
 ```
 
 ```{r clean metadata site names}
-#| code-fold: true
+#| code-fold: false
 
 metadata <- metadata |> 
   mutate(
@@ -209,7 +209,7 @@ Site names are now standardized across the catch data and metadata files.
 
 ```{r load dictionary data, echo=FALSE}
 dictionary <- read_csv("../data/workshop2/species_dictionary.csv")
-print(dictionary)
+dictionary
 ```
 
 ## Standardize species (common) names in catch data
@@ -218,6 +218,9 @@ The common species names are already in a standardized format. We need to standa
 
 ```{r fix catch data species names}
 #| code-fold: true
+
+catch_data |> 
+  distinct(species)
 
 catch_data <- catch_data |>
   mutate(
@@ -232,15 +235,13 @@ catch_data |>
 ## Create new variable ("scientific_name") in catch log by joining with taxonomic dictionary 
 
 ```{r join-species-dict}
-#| code-fold: true
+#| code-fold: false
 
 catch_data <- catch_data |>
   mutate(common_name = species) |>
   left_join(dictionary, by = join_by(common_name))
-```
 
-```{r, echo=FALSE}
-print(catch_data)
+catch_data
 ```
 
 Looks good - the species and site names are fixed.
@@ -249,14 +250,15 @@ Looks good - the species and site names are fixed.
 
 ```{r load sensor data, echo=FALSE}
 sensor_raw <- read_csv("../data/workshop2/estuary_sonde_data.csv")
-glimpse(sensor_raw)
+sensor_raw
 ```
 
 * Sonde data was collected every 15 minutes for the same 4 sites across the 30 days of sampling. The data was sourced in a daily format, and outliers were removed.
   + Note that `timestamp` is a character-type column. We will probably want to parse this to a date or date-time column.
 * Three different environmental variables were measured: *temperature*, *salinity*, and *turbidity*.
-  + Environmental variables need cleaning: some negative salinity values, some -999 turbidity values (failed values).
-* **Could investigate effects of all three on fish spp abundance or pick one? Need to think about prior research and hypotheses etc.**
+  + Environmental variables need cleaning: there are some negative salinity values and some -999 turbidity values (failed values).
+
+We could investigate the effects of all three environmental variables on fish species abundance or pick just one. We need to think about prior research and hypotheses, etc.
 
 
 ## Wrangle sensor data
@@ -264,7 +266,7 @@ glimpse(sensor_raw)
 Using the `mutate()` verb, we can create a POSIXct-type column for the timestamp data, change all -999 turbidity values to true NA values, and change all negative salinity values to be NA.
 
 ```{r clean sensor data}
-#| code-fold: true
+#| code-fold: false
 
 sensor_data <- sensor_raw |> 
     mutate(
@@ -276,7 +278,7 @@ sensor_data <- sensor_raw |>
       salinity = ifelse(salinity < 0, NA, salinity)
     )
 
-print(sensor_data)
+sensor_data
 ```
 
 ### Summarize 15-minute sensor data into daily means
@@ -299,7 +301,7 @@ sensor_daily <- sensor_data |>
     mean_turbidity = mean(turbidity, na.rm = TRUE),
     .groups = "drop")
 
-print(sensor_daily)
+sensor_daily
 ```
 
 # Join catch data with metadata and sensor data
@@ -313,17 +315,17 @@ catch_data_final <- catch_data |>
   left_join(metadata, by = join_by(site == site_name)) |> 
   left_join(sensor_daily, by = join_by(site, date))
 
-glimpse(catch_data_final)
+catch_data_final
 ```
 
-Note that we only have 427 rows of data...4 species, 4 sites, and 30 surveys = 4 * 4 * 30 = **480**! There should be 480 rows in our data table.
+Note that we only have 427 rows of data...4 species, 4 sites, and 30 surveys = 4 * 4 * 30 = **480**! There should be 480 rows in our data table!
 
 Some days there were no species counted at some sites, so these rows were omitted from the data. We need to wrangle the data so that zero counts are represented as 0 and not NA. This is important when it comes time to visualizing the data because we want to be able to distinguish between true absences (0) and missing data (NA).
 
 # Wrangle final dataset
 
 ```{r built zero-catch framework}
-#| code-fold: true
+#| code-fold: false
 
 catch_data_final <- catch_data_final |> 
   complete(
@@ -336,7 +338,7 @@ catch_data_final <- catch_data_final |>
     count = coalesce(count, 0)
   )
 
-glimpse(catch_data_final)
+catch_data_final
 ```
 
 **WE HAVE SUCCESSFULLY WRANGLED THE DATA!**
@@ -359,8 +361,10 @@ sal_sum <- catch_data_final |>
     .groups = "drop"
   )
 
-print(sal_sum)
+sal_sum
+```
 
+```{r include=FALSE}
 # Or with plotrix
 # library(plotrix)
 # catch_data_final |> 
@@ -402,7 +406,7 @@ turb_sum <- catch_data_final |>
     .groups = "drop"
   )
 
-print(turb_sum)
+turb_sum
 
 turb_sum |>
   ggplot(aes(x = zone, y = median_turbidity)) +
@@ -428,7 +432,7 @@ temp_sum <- catch_data_final |>
     .groups = "drop"
   )
 
-print(temp_sum)
+temp_sum
 
 temp_sum |>
   ggplot(aes(x = zone, y = median_temperature)) +
@@ -442,7 +446,7 @@ temp_sum |>
   theme(plot.title = element_text(face = "bold"))
 ```
 
-We'll choose salinity as our main environmental variable of interest, but we know that there are also differences in turbidity and temperature across the zones, which could also be influencing fish abundance patterns. **We can discuss this in the interpretation of our results and consider potential confounding effects of these other environmental variables in our discussion.**
+We'll choose salinity as our main environmental variable of interest, but we know that there are also differences in turbidity and temperature across the zones, which could also be influencing fish abundance patterns. We can discuss this in the interpretation of our results and consider potential confounding effects of these other environmental variables in our discussion.
 
 ## Remake salinity plot nicely for publication
 ```{r}
@@ -473,7 +477,7 @@ fish_stats <- catch_data_final |>
     .groups = "drop"
   )
 
-print(fish_stats)
+fish_stats
 ```
 
 ### Summary stats plot
