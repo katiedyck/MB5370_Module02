@@ -1,9 +1,10 @@
 ---
-title: "R4MS - Workshop 2"
+title: "Module 2: R4MS - Workshop 2"
 author: "Katie Dyck"
 date: "2026-06-04"
 format:
   html:
+      df-print: paged
       embed-resources: true
       code-fold: show
       code-copy: hover

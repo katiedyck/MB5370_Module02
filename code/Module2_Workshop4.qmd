@@ -1,9 +1,10 @@
 ---
-title: "R4MS - Workshop 4"
+title: "Module 2: R4MS - Workshop 4"
 author: "Katie Dyck"
 date: "2026-06-15"
 format:
   html:
+    df-print: paged
     embed-resources: true
     code-fold: show
     code-copy: hover
@@ -36,7 +37,7 @@ knitr::opts_chunk$set(
 
 Purge the global environment with the command `rm(list = ls())`.
 
-```{r Housekeeping}
+```{r Housekeeping, include=FALSE}
 #| message: true
 #| warning: false
 rm(list = ls())
@@ -62,7 +63,9 @@ rm(list = ls())
 
 # Load packages
 
-```{r load packages}
+Packages loaded for this workshop include `tidyverse`, `cols4all`, `here`, `sf`, `terra`, `leaflet`, and `tmap`. `sf` is for working with spatial data, `terra` is for working with raster data, `leaflet` is for interactive maps, and `tmap` is for thematic maps.
+
+```{r load packages, include=FALSE}
 library(tidyverse)
 library(cols4all)
 library(here)
@@ -72,22 +75,22 @@ library(leaflet)
 library(tmap)   # thematic maps are geographical maps in which spatial data distributions are visualized
 ```
 
-# Intro to the problem
+# About the data
 
-Our task is to wrangle a dataset to create a map of copepods in relation to temperature.
+Our task is to wrangle a dataset to create a map of copepods in relation to temperature. We will be looking at data that contains measurements of copepod species richness from around Australia. Copepods are a type of zooplankton, perhaps the most abundant complex animals on the planet and an important part of ocean food-webs. 
 
 # Download spatial data
 
-The spreadsheet `copepods-raw.csv` has measurements of copepod species richness from around Australia. Copepods are a type of zooplankton, perhaps the most abundant complex animals on the planet and an important part of ocean food-webs. 
+The spreadsheet `copepods-raw.csv` has data on copepod measurements.
 
-Like many distracted academics, she has also sent you some other data, but has not explained what it is all for yet. You’ll have to figure that out.
+We have other datasets we will be using in our analysis, but nobody has explained what it is all for yet. We'll have to figure that out.
 
-Copepod species were counted using samples taken from a Continuous Plankton Recorder. The CPR was towed behind ‘ships of opportunity’ (including commercial and research vessels). ‘Silks’ run continuously through the CPR and the plankton are trapped onto the silks, kind of like a printer that runs all day and night to record plankton in the ocean.
+Copepod species were counted using samples taken from a Continuous Plankton Recorder (CPR). The CPR was towed behind ‘ships of opportunity’ (including commercial and research vessels). ‘Silks’ run continuously through the CPR and the plankton are trapped onto the silks, kind of like a printer that runs all day and night to record plankton in the ocean.
 
 
-```{r load copepod data}
+```{r load copepod data, echo=FALSE}
 dat <- read_csv(here::here("data/workshop4/data-for-course/copepods_raw.csv"))
-print(dat)
+head(dat)
 ```
 
 For processing, the silks are divided into segments (`segment_no`).
@@ -95,43 +98,51 @@ For processing, the silks are divided into segments (`segment_no`).
 ```{r check CRF}
 st_crs(dat)
 ```
+The data does not currently have a coordinate reference system (CRS) defined. We will have to define it later.
 
 # Data Exploration
 
 ## Check coordinates
 
-```{r}
+```{r coodinate plot}
+#| code-fold: true
+
 ggplot(dat) + 
   aes(x = longitude, y = latitude, color = richness_raw) +
-  geom_point()
+  geom_point() +
+  # change legend name
+  labs(color = "Spp. richness")
 ```
+Looks like species richness is slightly higher in the north than the south. 
 
 ## Check for other patterns
 
-Visualize richness in a non-spatial way (latitude on x-axis, richness on y-axis)
+Visualize richness in a non-spatial way (latitude on x-axis, richness on y-axis):
 
-```{r}
+```{r check for lat patterns}
+#| code-fold: true
+
 ggplot(dat, aes(x = latitude, y = richness_raw)) + 
   stat_smooth() + 
-  geom_point()
+  geom_point() +
+  labs(x = "Latitude", y = "Species richness")
 ```
 
-At latitude -44, there is an unnatural change in the data pattern. We don't know what is causing this yet.
+At latitude -40, there is an unnatural change in the data pattern. We don't know what is causing this yet.
 
 # Getting started with maps
 
-Repeat the latitude vs. richness map, but with R's specialist packages for GIS and mapping.
+Let's repeat the latitude vs. richness map, but with R's specialist packages for GIS and mapping.
 
-* reference data to real locations on the planet, and bend it around a mostly spherical ball (i.e. earth)
+* We want to reference the data to real locations on the planet, and bend it around a mostly spherical ball (i.e. earth).
 
 First, using the `sf` package, we will turn the point data into a spatially referenced data frame. Similar to a shapefile for feature collection in GIS.
 
-```{r}
-# turn data into a simple features collection
+```{r turn data into simple features collection}
 sdat <- st_as_sf(dat, coords = c("longitude", "latitude"), crs = 4326)
 ```
 
-# Coordinate Reference System
+## Coordinate Reference System
 
 Coordinate reference systems are required for 2D mapping to compensate for the 3D nature of the earth.
 
@@ -139,7 +150,7 @@ In mapping, the reference point is referred to as "datum" and the lumpy earth mo
 
 GCS coordinates are represented by angular units (latitude and longitude), often in decimal degrees. For our data we will choose a common GCS, **WGS84**, to define the CRS using the EPSG code 5126.
 
-```{r}
+```{r CRS, echo=FALSE}
 crs5126 <- st_crs(5126)
 crs5126   # look at the whole CRS
 crs5126$Name  # look at the CRS name
