@@ -4,25 +4,25 @@ author: "Katie Dyck"
 date: "2026-06-04"
 format:
   html:
-      df-print: paged
-      embed-resources: true
-      code-fold: show
-      code-copy: hover
-      code-block-bg: true
-      code-block-border-left: "grey25"
-      code-overflow: scroll
-      toc: true
-      number-sections: true
-      number-depth: 4
-      toc-location: left
-      toc-expand: 3
-      toc-title: Contents
-      syntax-highlighting: github
-      theme: cosmo
-      title-block-banner: true
-      fig-height: 6
-      fig-width: 10
-      fig-cap-location: bottom
+    df-print: paged
+    embed-resources: true
+    code-fold: show
+    code-copy: hover
+    code-block-bg: true
+    code-block-border-left: "grey25"
+    code-overflow: scroll
+    toc: true
+    number-sections: true
+    number-depth: 4
+    toc-location: left
+    toc-expand: 3
+    toc-title: Contents
+    syntax-highlighting: github
+    theme: cosmo
+    title-block-banner: true
+    fig-height: 6
+    fig-width: 10
+    fig-cap-location: bottom
 ---
 
 # Introduction
