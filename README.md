@@ -22,3 +22,15 @@ The [data](data) folder contains .csv, .txt, and .xlsx files that I uploaded to 
 - `estuary_metadata.csv` - Latitude, longitude, and zone for each area of the Ross River. Corresponds with the data in 'estuary_catch_log.xlsx'.
 - `estuary_sonde_data.csv` - Temperature (°C), salinity (PSU), and turbidity (Nephelometric Turbidity Units, NTU) data for each area of the Ross River (lower, mid, river mouth, upper). Data for all 3 variables was collected from May 1 to 27 2026.
 - `species_dictionary.csv` - Scientific and common species name of each fish species included in 'estuary_catch_log.xlsx' and 'estuary_metadata.csv'.
+
+### Workshop 3
+- `global_fish_stocks.csv` - Date/time and percentage of fish caught, based on the data shown in the first graph at [](https://reefresilience.org/coral-reef-fisheries-module/coral-reef-fisheries/overfishing/).
+
+### Workshop 4
+- `Route-data.csv` - Movement trajectories travelled by vessels towing Continuous Plankton Recording (CPR) devices throughout Australia. This file can be used to create maps of where plankton were caught in Australia in 2009.
+- `copepods_abundance.csv` - Copepod species counts throughout Australia, collected in 2009, counted using samples taken from a Continuous Plankton Recorder (CPR). "Silk" refers to silk bands continuously run through the CPR; they trap plankton as the vessel towing the CPR moves through the water. 
+- `copepods_raw.csv` - Raw copepod measurement data collected in 2009. 
+
+In the `spatial-data` folder:
+- Shapefile of Australia with state/territory boundary lines (`Aussie` folder)
+- Shapefile of the Australian coastal shelf (`aus_shelf` folder)
