@@ -9,5 +9,10 @@ This repository contains code and data, and other supplementary files from Modul
 The [code](code) folder contains the R Quarto markdown files I created for these workshops; each workshop has its own file.
 
 ## Overview of data files
-The [data](data) folder contains .csv, .txt, and .xlsx files that I uploaded to R to complete workshops 1 through 4, including the workshop 2 exercise.
+The [data](data) folder contains .csv, .txt, and .xlsx files that I uploaded to R to complete workshops 1 through 4.
 
+### Workshop 1
+- `acoustic_telemetry_stream.txt` - Acoustic tracking data for 4 sea turtles, collected in May 2026 (specific location unknown).
+- `fish_catch_data.xlsx` - Information on fish species caught on the Great Barrier Reef in March 2026, including name of vessels that caught the fish, target species scientific name, total weight of fish caught, total weight of bycatch species caught, and the zone where the fish were caught.
+- `mangrove_survey_raw.csv` - Information about mangroves located on Hinchinbrook Island, Queensland, Australia. The first five rows of the file contain information pertaining to weather, equipment used, and notes concerning data collection that are relevant to data analysis.
+- `reef_cover_log.csv` - Data collected from underwater transects performed on in various locations on Magnetic Island, Queensland, Australia, in May 2026. Contains information on coral reefs in Nelly Bay, Geoffrey Bay, and Florence Bay, such as depth (in metres) and percentage cover of hard corals, macroalgae, and bare substrate.
