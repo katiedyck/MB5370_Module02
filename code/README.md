@@ -6,4 +6,4 @@ The published html files for each workshop can be viewed below:
 - [Workshop 3](https://katiedyck.github.io/MB5370_Module02/code/Module2_Workshop3.html)
 - [Workshop 4](https://katiedyck.github.io/MB5370_Module02/code/Module2_Workshop4.html)
 
-The `output` folder contains files I created and exported during Workshop 1.
+The `outputs` folder contains tables and figures I created and exported during Workshop 1.
