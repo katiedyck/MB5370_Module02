@@ -87,7 +87,7 @@ library(palmerpenguins)
 This is what a **tidy** data table looks like:
 
 ```{r tidy table example}
-#| code-fold: false
+#| code-fold: true
 
 table1 <- table1
 table1
@@ -96,7 +96,7 @@ table1
 Below are two examples of what an **untidy** data table looks like:
 
 ```{r untidy table examples}
-#| code-fold: false
+#| code-fold: true
 
 table2 <- table2
 table2
