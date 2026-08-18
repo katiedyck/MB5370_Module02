@@ -16,3 +16,9 @@ The [data](data) folder contains .csv, .txt, and .xlsx files that I uploaded to 
 - `fish_catch_data.xlsx` - Information on fish species caught on the Great Barrier Reef in March 2026, including name of vessels that caught the fish, target species scientific name, total weight of fish caught, total weight of bycatch species caught, and the zone where the fish were caught.
 - `mangrove_survey_raw.csv` - Information about mangroves located on Hinchinbrook Island, Queensland, Australia. The first five rows of the file contain information pertaining to weather, equipment used, and notes concerning data collection that are relevant to data analysis.
 - `reef_cover_log.csv` - Data collected from underwater transects performed on in various locations on Magnetic Island, Queensland, Australia, in May 2026. Contains information on coral reefs in Nelly Bay, Geoffrey Bay, and Florence Bay, such as depth (in metres) and percentage cover of hard corals, macroalgae, and bare substrate.
+
+### Workshop 2
+- `estuary_catch_log.xlsx` - Fish catch data from the Ross River in Queensland, Australia. Contains data on area where fish were caught, date of the catch (May 1 to 30 2026), common species name, and number of fish caught. *Note that this file contains 4 sheets of data: each one contains data on a separate area of the Ross River (lower, mid, river mouth, and upper)*.
+- `estuary_metadata.csv` - Latitude, longitude, and zone for each area of the Ross River. Corresponds with the data in 'estuary_catch_log.xlsx'.
+- `estuary_sonde_data.csv` - Temperature (°C), salinity (PSU), and turbidity (Nephelometric Turbidity Units, NTU) data for each area of the Ross River (lower, mid, river mouth, upper). Data for all 3 variables was collected from May 1 to 27 2026.
+- `species_dictionary.csv` - Scientific and common species name of each fish species included in 'estuary_catch_log.xlsx' and 'estuary_metadata.csv'.
