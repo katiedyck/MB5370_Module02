@@ -449,24 +449,24 @@ We can save our figures and tables to our GitHub repository by creating an "outp
 #| code-fold: true
 
 # Create output directories if they do not exist:
-if (!dir.exists("outputs/figures")) dir.create("outputs/figures", recursive = TRUE)   # folder for figs
-if (!dir.exists("outputs/tables")) dir.create("outputs/tables", recursive = TRUE)     # folder for tables
-if (!dir.exists("Rdata")) dir.create("Rdata", recursive = TRUE)   # folder for Rdata objects
+if (!dir.exists("/outputs/figures")) dir.create("outputs/figures", recursive = TRUE)   # folder for figs
+if (!dir.exists("/outputs/tables")) dir.create("outputs/tables", recursive = TRUE)     # folder for tables
+if (!dir.exists("/Rdata")) dir.create("Rdata", recursive = TRUE)   # folder for Rdata objects
 
 # 1. Exporting our collapsed summary table as a universal flat text file
-write_csv(biological_signal, "outputs/penguin_species_mass_summary.csv")
+write_csv(biological_signal, "outputs/tables/penguin_species_mass_summary.csv")
 
 # 2. Saving our cleaned morphological cohort table as a native R binary file
 saveRDS(clean_scientific_fields, "outputs/clean_penguin_morphology_cohort.rds")
 ```
 
 ```{r Saving figures}
-ggsave("outputs/mass_compare_plot.png", 
+ggsave("outputs/figures/mass_compare_plot.png", 
        plot = mass_compare_plot, 
        width = 120, height = 120, 
        units = "mm", dpi = 300)
 
-ggsave("outputs/mass_compare_plot2.png", 
+ggsave("outputs/figures/mass_compare_plot2.png", 
        plot = mass_compare_plot, 
        width = 120, height = 120, 
        units = "mm", dpi = 300)
