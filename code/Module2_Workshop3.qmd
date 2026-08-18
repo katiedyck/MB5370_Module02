@@ -10,7 +10,7 @@ format:
     code-copy: hover
     code-block-bg: true
     code-block-border-left: "grey25"
-    code-overflow: wrap
+    code-overflow: scroll
     toc: true
     number-sections: true
     number-depth: 4
@@ -84,7 +84,7 @@ I chose to use the first graph from this webpage: [https://reefresilience.org/co
 
 ```{r download plot data, include=FALSE}
 fish <- read_csv(here::here("data/workshop3/global_fish_stocks.csv"))
-print(fish)
+fish
 ```
 
 I want to first rename the columns so I know what variables I am working with.
@@ -94,7 +94,8 @@ I want to first rename the columns so I know what variables I am working with.
 
 fish <- fish |> 
     rename(date = "x", percent = "y")
-print(fish)
+
+fish
 ```
 
 Next I will categorize each row of data into one of three categories: fully exploited, partially exploited, or underexploited. I will do this by creating a new column called `exploit_type` and using the `case_when()` function to assign the appropriate category based on the row number.
@@ -112,7 +113,7 @@ fish <- fish |>
     )
   )
 
-print(fish)
+fish
 ```
 
 In the `date` column I am only concerned about the year, so I will remove the month, day, and time information and create a new column called `year`. I will then remove the `date` column from the data frame.
@@ -124,7 +125,7 @@ fish <- fish |>
   mutate(year = year(date), .after = date) |> 
   select(-date)
 
-print(fish)
+fish
 ```
 
 ## Completed plot 
@@ -139,7 +140,10 @@ ggplot(fish, aes(x = year, y = percent, colour = exploit_type, shape = exploit_t
   geom_smooth(method = "lm", se = FALSE) +
   scale_y_continuous(limits = c(0,70)) +
   scale_x_continuous(breaks = seq(1974, 2009, by = 5)) +
+  scale_color_discrete(labels = c("Fully Exploited", "Partially Exploited", "Under Exploited")) +
+  scale_shape_discrete(labels = c("Fully Exploited", "Partially Exploited", "Under Exploited")) +
   labs(x = "Year", y = "Percentage",
-       title = "Global Trends in Marine Fish Stock Status: 1974-2009")
+       title = "Global Trends in Marine Fish Stock Status: 1974-2009",
+       colour = "Exploitation Type", shape = "Exploitation Type")
 ```
 

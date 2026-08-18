@@ -10,7 +10,7 @@ format:
     code-copy: hover
     code-block-bg: true
     code-block-border-left: "grey25"
-    code-overflow: wrap
+    code-overflow: scroll
     toc: true
     number-sections: true
     number-depth: 4
@@ -77,7 +77,7 @@ library(tmap)   # thematic maps are geographical maps in which spatial data dist
 
 # About the data
 
-Our task is to wrangle a dataset to create a map of copepods in relation to temperature. We will be looking at data that contains measurements of copepod species richness from around Australia. Copepods are a type of zooplankton, perhaps the most abundant complex animals on the planet and an important part of ocean food-webs. 
+The task is to wrangle a dataset to create a map of copepods in relation to temperature. We will be looking at data that contains measurements of copepod species richness from around Australia. Copepods are a type of zooplankton, perhaps the most abundant complex animals on the planet and an important part of ocean food-webs. 
 
 # Download spatial data
 
@@ -151,6 +151,8 @@ In mapping, the reference point is referred to as "datum" and the lumpy earth mo
 GCS coordinates are represented by angular units (latitude and longitude), often in decimal degrees. For our data we will choose a common GCS, **WGS84**, to define the CRS using the EPSG code 5126.
 
 ```{r CRS, echo=FALSE}
+#| output: false
+
 crs5126 <- st_crs(5126)
 crs5126   # look at the whole CRS
 crs5126$Name  # look at the CRS name
@@ -163,13 +165,13 @@ To accurately map our data, we need to decide how to 'project' 3 dimensions into
 
 # Feature collection (points)
 
-```{r}
+```{r, echo=FALSE}
 sdat
 ```
 
-Note the geometry column, which is where the coordinates are stored. 
+Note the `geometry` column, which is where the coordinates are stored. 
 
-In summary, a simple feature is like a shapefile in that it holds data in rows and columns but is spatially aware.
+In summary, a simple feature (sf) is like a shapefile in that it holds data in rows and columns but is spatially aware.
 
 # Cartography
 
@@ -230,6 +232,8 @@ The `sf` package can also handle shapes (like polygons) for spatial data. Let's 
 Shapefiles can be read directly into R with the st_read command (like read_csv, but for spatial files):
 
 ```{r}
+#| output: false
+
 aus <- st_read(here("data/workshop4/data-for-course/spatial-data/Aussie/Aussie.shp"))
 ```
 
@@ -238,6 +242,8 @@ aus
 ```
 
 ```{r}
+#| output: false
+
 shelf <- st_read(here("data/workshop4/data-for-course/spatial-data/aus_shelf/aus_shelf.shp"))
 ```
 
@@ -248,14 +254,17 @@ shelf
 ## Mapping the polygons
 
 ```{r}
-tm_shape(shelf) +
+tm_shape(shelf) +   # Australia's coastal shelf
   tm_polygons()
 
-tm_shape(aus) +
+tm_shape(aus) +   # Australia with state boundary lines
   tm_polygons()
 ```
 
 ```{r check CRS of layers}
+#| output: false
+
+# Check CRS of layers:
 st_crs(aus)
 st_crs(shelf)
 st_crs(sdat)
@@ -291,8 +300,3 @@ tm_shape(shelf, bbox = sdat) +
   tm_shape(sdat) + 
   tm_dots()
 ```
-
-```{r}
-
-```
-
